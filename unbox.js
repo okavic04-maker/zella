@@ -5,10 +5,11 @@
   var CDN = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@2fa945794e/';
   var API = 'https://api.easy-orders.net/api/v1/';
   var VIDS = [
-    { f: 'uomo-born-in-roma', n: 'Valentino Uomo Born in Roma', s: 'borninroma', by: 'scentcrazy' },
-    { f: 'donna-born-in-roma', n: 'Valentino Donna Born in Roma', s: 'donnapp', by: 'marinaa.lor' },
-    { f: 'ysl-y-edp', n: 'YSL Y EDP', s: 'yysl', by: 'juwielli' }
+    { f: 'uomo-born-in-roma', n: 'Valentino Uomo Born in Roma', s: 'borninroma', g: 'm' },
+    { f: 'donna-born-in-roma', n: 'Valentino Donna Born in Roma', s: 'donnapp', g: 'w' },
+    { f: 'ysl-y-edp', n: 'YSL Y EDP', s: 'yysl', g: 'm' }
   ];
+  var filter = '', list = VIDS; // list = the videos the viewer goes through (after the For Him / For Her filter)
 
   var css = ''
     + '#zub{direction:ltr;text-align:center;margin:26px 0 8px}'
@@ -36,7 +37,26 @@
     + '.zub-foot a,.zub-foot button{flex:1;padding:13px 8px;border-radius:14px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;cursor:pointer;font-family:inherit}'
     + '.zub-foot a{flex:0 0 34%;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.6)}'
     + '.zub-add{background:#fff;color:#000;border:0}'
-    + '.zub-add.done{background:#16a34a;color:#fff}';
+    + '.zub-add.done{background:#16a34a;color:#fff}'
+    + '#zub .tabs{display:flex;justify-content:center;gap:6px;margin:0 0 12px}'
+    + '#zub .tabs b{padding:6px 14px;border-radius:20px;border:1px solid #d1d5db;font-size:12px;font-weight:700;color:#374151;cursor:pointer}'
+    + '#zub .tabs b.on{background:#000;border-color:#000;color:#fff}'
+    + '.zub-offer{position:absolute;left:16px;right:16px;bottom:78px;z-index:3;text-align:center;color:#fff;font-size:12px;font-weight:700;background:rgba(201,162,77,.92);color:#000;padding:7px;border-radius:10px}'
+    + '.zub-end{color:#fff;text-align:center;padding:0 28px}'
+    + '.zub-end .h{font-size:22px;font-weight:800;margin-bottom:6px}'
+    + '.zub-end .d{font-size:13px;opacity:.8;margin-bottom:18px}'
+    + '.zub-end a{display:block;margin:8px auto;max-width:280px;padding:13px;border-radius:14px;background:#fff;color:#000;font-weight:700;text-decoration:none}'
+    + '.zub-end a+a{background:transparent;color:#fff;border:1px solid #fff}'
+    + '#zub-pp{display:flex;align-items:center;gap:10px;margin:12px 0 4px;padding:8px 12px 8px 8px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;cursor:pointer;width:100%;direction:ltr;font-family:inherit}'
+    + '#zub-pp video{width:44px;height:60px;object-fit:cover;border-radius:8px;flex:none;pointer-events:none}'
+    + '#zub-pp span{flex:1;text-align:left;font-size:14px;font-weight:700;color:#111}'
+    + '#zub-pp small{display:block;font-size:11px;font-weight:500;color:#6b7280}'
+    + '#zub-pp i{font-style:normal;width:30px;height:30px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}';
+  function addCss() {
+    if (document.getElementById('zub-css')) return;
+    var st = document.createElement('style'); st.id = 'zub-css'; st.textContent = css; document.head.appendChild(st);
+  }
+  function muteplay(root) { root.querySelectorAll('video').forEach(function (v) { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(function () {}); }); } // autoplay needs muted set in code
 
   var info = {}, infoLoading = false;
   function loadInfo() { // price + id of each product, from the store's public API
@@ -50,19 +70,21 @@
   function priceOf(p) { return p.sale_price && p.sale_price < p.price ? p.sale_price : p.price; }
 
   function render() {
+    renderProductPage();
     var old = document.getElementById('zub');
     if (location.pathname !== '/') { if (old) old.remove(); return; }
     if (old) return;
     var anchor = document.getElementById('zella-reviews');
     if (!anchor) return;
-    if (!document.getElementById('zub-css')) {
-      var st = document.createElement('style'); st.id = 'zub-css'; st.textContent = css; document.head.appendChild(st);
-    }
+    addCss();
     loadInfo();
+    list = VIDS.filter(function (v) { return !filter || v.g === filter; });
     var el = document.createElement('div');
     el.id = 'zub';
-    el.innerHTML = '<div class="t">Unboxing</div><div class="s">See the real bottle before you order</div><div class="row">'
-      + VIDS.map(function (v, i) {
+    el.innerHTML = '<div class="t">Unboxing</div><div class="s">See the real bottle before you order</div>'
+      + '<div class="tabs">' + [['', 'All'], ['m', 'For Him'], ['w', 'For Her']].map(function (x) { return '<b data-zubf="' + x[0] + '"' + (filter === x[0] ? ' class="on"' : '') + '>' + x[1] + '</b>'; }).join('') + '</div>'
+      + '<div class="row">'
+      + list.map(function (v, i) {
         var p = info[v.s], price = '', off = '';
         if (p) {
           var now = priceOf(p);
@@ -73,7 +95,27 @@
           + '<span class="p"></span><span class="n">' + v.n + '</span>' + price + off + '</button>';
       }).join('') + '</div>';
     anchor.parentElement.insertBefore(el, anchor.nextSibling);
-    el.querySelectorAll('video').forEach(function (v) { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(function () {}); }); // autoplay needs muted set in code
+    muteplay(el);
+  }
+
+  // product page: "Watch unboxing" button under the product name, when that product has a video
+  function renderProductPage() {
+    var m = location.pathname.match(/^\/products\/([^\/?#]+)/);
+    var old = document.getElementById('zub-pp');
+    var v = m && VIDS.filter(function (x) { return x.s === decodeURIComponent(m[1]); })[0];
+    if (!v) { if (old) old.remove(); return; }
+    if (old && old.dataset.s === v.s) return;
+    if (old) old.remove();
+    var h1 = document.querySelector('h1.product_name');
+    if (!h1) return;
+    addCss();
+    loadInfo();
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'zub-pp'; b.dataset.s = v.s;
+    b.innerHTML = '<video src="' + CDN + v.f + '-card.mp4" poster="' + CDN + v.f + '-card.jpg" muted autoplay loop playsinline preload="metadata"></video>'
+      + '<span>Watch the real unboxing<small>See the bottle before you order</small></span><i>▶</i>';
+    h1.insertAdjacentElement('afterend', b);
+    muteplay(b);
   }
 
   var view = null;
@@ -82,16 +124,27 @@
     view.remove(); view = null;
     document.body.style.overflow = '';
   }
+  function openView() {
+    if (!view) { view = document.createElement('div'); view.className = 'zub-view'; document.body.appendChild(view); document.body.style.overflow = 'hidden'; }
+  }
+  function endCard() { // after the last video: send them to shop the collections
+    openView();
+    view.dataset.i = list.length;
+    view.innerHTML = '<button type="button" class="zub-x" aria-label="Close">×</button><b class="zub-a">‹</b>'
+      + '<div class="zub-end"><div class="h">Like what you saw?</div><div class="d">Original perfumes · Cash on delivery</div>'
+      + '<a href="/collections/men">Shop Men</a><a href="/collections/women">Shop Women</a></div>';
+  }
   function show(i) {
     if (i < 0) i = 0;
-    if (i >= VIDS.length) return close();
-    var v = VIDS[i], p = info[v.s];
-    if (!view) { view = document.createElement('div'); view.className = 'zub-view'; document.body.appendChild(view); document.body.style.overflow = 'hidden'; }
+    if (i >= list.length) return endCard();
+    var v = list[i], p = info[v.s];
+    openView();
     view.dataset.i = i;
     view.innerHTML = '<div class="zub-bar"><i></i></div>'
       + '<button type="button" class="zub-x" aria-label="Close">×</button>'
       + '<video src="' + CDN + v.f + '.mp4" poster="' + CDN + v.f + '-card.jpg" playsinline preload="auto"></video>'
       + '<b class="zub-a">‹</b><b class="zub-a r">›</b>'
+      + '<div class="zub-offer">🎁 2nd piece 50% OFF · Buy 2 get 1 FREE</div>'
       + '<div class="zub-foot"><a href="/products/' + v.s + '">View</a>'
       + '<button type="button" class="zub-add">' + (p ? 'Add to Cart · ' + money(priceOf(p)) + ' EGP' : 'Add to Cart') + '</button></div>';
     var vid = view.querySelector('video'), bar = view.querySelector('.zub-bar i');
@@ -147,13 +200,18 @@
   }
 
   document.addEventListener('click', function (e) {
+    var f = e.target.closest && e.target.closest('[data-zubf]');
+    if (f) { filter = f.getAttribute('data-zubf'); var z = document.getElementById('zub'); if (z) z.remove(); render(); return; }
+    var pp = e.target.closest && e.target.closest('#zub-pp');
+    if (pp) { list = VIDS.filter(function (x) { return x.s === pp.dataset.s; }); show(0); return; }
     var b = e.target.closest && e.target.closest('[data-zub]');
-    if (b) { show(+b.getAttribute('data-zub')); return; }
+    if (b) { list = VIDS.filter(function (v) { return !filter || v.g === filter; }); show(+b.getAttribute('data-zub')); return; }
     if (!view || !view.contains(e.target)) return;
     var i = +view.dataset.i;
-    if (e.target.closest('.zub-foot a')) { close(); return; }
+    if (e.target.closest('.zub-foot a, .zub-end a')) { close(); return; }
     var add = e.target.closest('.zub-add');
-    if (add) { if (!add.disabled) addToCart(add, VIDS[i]); return; }
+    if (add) { if (!add.disabled) addToCart(add, list[i]); return; }
+    if (e.target.closest('.zub-end')) return;
     var a = e.target.closest('.zub-a');
     if (a) return show(a.classList.contains('r') ? i + 1 : i - 1);
     if (e.target.tagName === 'VIDEO') { var vd = e.target; vd.paused ? vd.play() : vd.pause(); return; } // دوسة على الفيديو = إيقاف/تشغيل
