@@ -1,7 +1,8 @@
 /* Zella Store: Unboxing videos on the homepage (hosted on GitHub, loaded by one line in the head code).
-   To add a video: upload <name>.mp4 + <name>.jpg to the repo and add a line to VIDS. */
+   To add a video: upload <name>.mp4 + <name>.jpg to the repo, add a line to VIDS,
+   and set CDN to the new commit (jsDelivr is slow to refresh videos on @main). */
 (function () {
-  var CDN = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@main/';
+  var CDN = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@231a04a985/';
   var VIDS = [
     { f: 'uomo-born-in-roma', n: 'Valentino Uomo Born in Roma', s: 'borninroma', by: 'scentcrazy' },
     { f: 'donna-born-in-roma', n: 'Valentino Donna Born in Roma', s: 'donnapp', by: 'marinaa.lor' },
