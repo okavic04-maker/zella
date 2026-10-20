@@ -6,7 +6,7 @@
   var API = 'https://api.easy-orders.net/api/v1/';
   var VIDS = [
     { f: 'uomo-born-in-roma', n: 'Valentino Uomo Born in Roma', s: 'borninroma', g: 'm' },
-    { f: 'donna-born-in-roma', n: 'Valentino Donna Born in Roma', s: 'donnapp', g: 'w' },
+    { f: 'donna-born-in-roma', n: 'Valentino Donna Born in Roma', s: 'donnaborninroma', g: 'w' },
     { f: 'ysl-y-edp', n: 'YSL Y EDP', s: 'yysl', g: 'm' }
   ];
   var filter = '', list = VIDS; // list = the videos the viewer goes through (after the For Him / For Her filter)
@@ -38,6 +38,8 @@
     + '.zub-foot a{flex:0 0 34%;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.6)}'
     + '.zub-add{background:#fff;color:#000;border:0}'
     + '.zub-add.done{background:#16a34a;color:#fff}'
+    + '.zub-add.so{background:#9ca3af;color:#fff;cursor:default}'
+    + '#zub .off.so{background:#fff;color:#000}'
     + '#zub .tabs{display:flex;justify-content:center;gap:6px;margin:0 0 12px}'
     + '#zub .tabs b{padding:6px 14px;border-radius:20px;border:1px solid #d1d5db;font-size:12px;font-weight:700;color:#374151;cursor:pointer}'
     + '#zub .tabs b.on{background:#000;border-color:#000;color:#fff}'
@@ -61,13 +63,14 @@
   var info = {}, infoLoading = false;
   function loadInfo() { // price + id of each product, from the store's public API
     if (infoLoading) return; infoLoading = true;
-    fetch(API + 'products?limit=20&fields=id,slug,price,sale_price&filter=slug||$in||' + VIDS.map(function (v) { return v.s; }).join(','))
+    fetch(API + 'products?limit=20&fields=id,slug,price,sale_price,quantity,track_stock&filter=slug||$in||' + VIDS.map(function (v) { return v.s; }).join(','))
       .then(function (r) { return r.json(); })
       .then(function (j) { (j.data || j || []).forEach(function (p) { info[p.slug] = p; }); var el = document.getElementById('zub'); if (el) el.remove(); render(); })
       .catch(function () {});
   }
   function money(x) { return Math.round(x).toLocaleString('en-US'); }
   function priceOf(p) { return p.sale_price && p.sale_price < p.price ? p.sale_price : p.price; }
+  function soldOut(p) { return p && p.track_stock && !(p.quantity > 0); }
 
   function render() {
     renderProductPage();
@@ -90,6 +93,7 @@
           var now = priceOf(p);
           price = '<span class="pr">' + (now < p.price ? '<s>' + money(p.price) + ' EGP</s>' : '') + money(now) + ' EGP</span>';
           if (now < p.price) off = '<span class="off">-' + Math.round((1 - now / p.price) * 100) + '%</span>';
+          if (soldOut(p)) off = '<span class="off so">Sold out</span>';
         }
         return '<button type="button" data-zub="' + i + '"><video src="' + CDN + v.f + '-card.mp4" poster="' + CDN + v.f + '-card.jpg" muted autoplay loop playsinline preload="metadata"></video>'
           + '<span class="p"></span><span class="n">' + v.n + '</span>' + price + off + '</button>';
@@ -146,7 +150,8 @@
       + '<b class="zub-a">‹</b><b class="zub-a r">›</b>'
       + '<div class="zub-offer">🎁 2nd piece 50% OFF · Buy 2 get 1 FREE</div>'
       + '<div class="zub-foot"><a href="/products/' + v.s + '">View</a>'
-      + '<button type="button" class="zub-add">' + (p ? 'Add to Cart · ' + money(priceOf(p)) + ' EGP' : 'Add to Cart') + '</button></div>';
+      + (soldOut(p) ? '<button type="button" class="zub-add so" disabled>Out of Stock</button></div>'
+        : '<button type="button" class="zub-add">' + (p ? 'Add to Cart · ' + money(priceOf(p)) + ' EGP' : 'Add to Cart') + '</button></div>');
     var vid = view.querySelector('video'), bar = view.querySelector('.zub-bar i');
     vid.addEventListener('timeupdate', function () { if (vid.duration) bar.style.width = (vid.currentTime / vid.duration * 100) + '%'; });
     vid.addEventListener('ended', function () { show(i + 1); });
