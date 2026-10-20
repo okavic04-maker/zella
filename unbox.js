@@ -118,7 +118,8 @@
     b.type = 'button'; b.id = 'zub-pp'; b.dataset.s = v.s;
     b.innerHTML = '<video src="' + CDN + v.f + '-card.mp4" poster="' + CDN + v.f + '-card.jpg" muted autoplay loop playsinline preload="metadata"></video>'
       + '<span>Watch the real unboxing<small>See the bottle before you order</small></span><i>▶</i>';
-    h1.insertAdjacentElement('afterend', b);
+    var at = getComputedStyle(h1.parentElement).display.indexOf('flex') > -1 ? h1.parentElement : h1; // the name sits in a flex row: go under the row
+    at.insertAdjacentElement('afterend', b);
     muteplay(b);
   }
 
