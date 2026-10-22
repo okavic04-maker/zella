@@ -31,7 +31,7 @@
     + '#zub .pr{position:absolute;left:8px;bottom:9px;z-index:1;color:#fff;font-size:14px;font-weight:800;text-align:left}'
     + '#zub .pr s{display:block;font-size:11px;font-weight:600;opacity:.75}'
     + '#zub .off{position:absolute;right:8px;bottom:10px;z-index:1;background:#c9a24d;color:#000;font-size:11px;font-weight:800;padding:3px 7px;border-radius:20px}'
-    + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center}'
+    + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:center;justify-content:center}'
     + '.zub-view video{max-width:100%;max-height:100%;border-radius:12px;background:#000}'
     + '.zub-bar{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.35);border-radius:2px;z-index:2}'
     + '.zub-bar i{display:block;height:100%;width:0;background:#fff;border-radius:2px}'
@@ -142,7 +142,7 @@
     openView();
     view.dataset.i = list.length;
     view.innerHTML = '<button type="button" class="zub-x" aria-label="Close">×</button><b class="zub-a">‹</b>'
-      + '<div class="zub-end"><div class="h">Like what you saw?</div><div class="d">Original perfumes · Cash on delivery</div>'
+      + '<div class="zub-end"><div class="h">Like what you saw?</div><div class="d">Cash on delivery · Free shipping over 1500 EGP</div>'
       + '<a href="/collections/men">Shop Men</a><a href="/collections/women">Shop Women</a></div>';
   }
   function show(i) {
