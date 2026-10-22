@@ -1,6 +1,6 @@
 /* Zella Store: WhatsApp help links where customers get stuck (no floating button).
-   Product page: under the order button. Checkout: a small gray line above the form, and a clear help link
-   under "إتمام الطلب" only when the form shows an error.
+   Product page: a small line under the order button. Checkout: a help link under "إتمام الطلب"
+   only when the form shows an error.
    Thanks page: confirm the order on WhatsApp. To change the number, edit PHONE. */
 (function () {
   var PHONE = '6285659440745';
@@ -9,9 +9,10 @@
     + '.zwa,.zwa *{text-decoration:none!important}'
     + '.zwa svg{width:20px;height:20px;flex:none;fill:#16a34a}'
     + '.zwa small{display:block;font-size:12px;font-weight:500;color:#3f6212}'
-    + '#zwa-top{display:inline-flex;align-items:center;gap:5px;margin:6px 0 2px;font-size:13px;color:#6b7280;text-decoration:none!important}'
-    + '#zwa-top svg{width:15px;height:15px;fill:#16a34a}'
-    + '#zwa-top b{color:#15803d;font-weight:700}';
+    + '#zwa-p{display:flex;justify-content:center;align-items:center;gap:5px;margin:8px 0 2px;padding:0;border:0;background:none;font-size:12px;font-weight:500;color:#6b7280}'
+    + '#zwa-p svg{width:14px;height:14px}'
+    + '#zwa-p b{color:#15803d;font-weight:700}';
+
   var ICON = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4 5.2 5.2 0 0 0 3.2.7 2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>';
 
   function wa(text) { return 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(text); }
@@ -33,17 +34,10 @@
     var at = b.parentElement.querySelectorAll('button').length > 1 ? b.parentElement : b;
     at.insertAdjacentElement('afterend', link('zwa-p',
       'السلام عليكم، عندي سؤال عن: ' + h1.innerText.trim() + '\n' + location.origin + location.pathname,
-      'عندك سؤال عن الريحة أو العرض؟ كلمنا واتساب', 'بنرد عليك في دقايق'));
+      'عندك سؤال عن البرفيوم أو العرض؟ <b>واتساب</b>', ''));
   }
 
   function checkoutPage() {
-    var h = document.getElementById('contact-info-heading');
-    if (h && !document.getElementById('zwa-top')) {
-      var a = document.createElement('a');
-      a.id = 'zwa-top'; a.href = wa('السلام عليكم، محتاج مساعدة أكمّل الطلب'); a.target = '_blank'; a.rel = 'noopener';
-      a.innerHTML = ICON + 'محتاج مساعدة؟ <b>واتساب</b>';
-      h.insertAdjacentElement('afterend', a);
-    }
     // the store shows "هذا الحقل مطلوب" in red under empty fields: only then offer to finish the order for them
     var err = [].slice.call(document.querySelectorAll('p.text-red-600, .Toastify__toast--error')).filter(function (x) { return x.offsetParent; })[0];
     var old = document.getElementById('zwa-c');
