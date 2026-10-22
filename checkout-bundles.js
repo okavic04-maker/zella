@@ -1,0 +1,84 @@
+// Zella: إضافة خصم الباندلز في صفحة إتمام الطلب (وفّرت مع العرض + السعر المشطوب)
+(function(){
+var CAT = '83a341ea-2ab6-4ed3-82e8-0ff3b60b3f19';
+var API = 'https://api.easy-orders.net/api/v1/';
+var diffs = null, bs = 0, at = 0, busy = false;
+function guest(){ try { return JSON.parse(localStorage.getItem('guest-id')).state||{}; } catch (e){ return {}; } }
+function get(url, g){
+return fetch(url, { headers: { 'Accept': 'application/json', 'currencyId': g.currencyId, 'Currency-Id': g.currencyId } })
+.then(function(r){ return r.ok ? r.json() : null; });
+}
+function money(n){ return Math.round(n).toLocaleString('en-US') + ' ج.م'; }
+function num(el){ return el ? parseFloat(el.textContent.replace(/[^\d.]/g, ''))||0 : 0; }
+function refresh(){
+var g = guest();
+if (busy||!g.guestId) return;
+busy = true;
+if (!diffs) diffs = get(API + 'products?limit=500&page=1&fields=id,price,sale_price&category_id=' + CAT, g).then(function(j){
+var m = {};
+((j&&j.data)||[]).forEach(function(p){ if (p.sale_price&&p.price > p.sale_price) m[p.id] = p.price - p.sale_price; });
+return m;
+}).catch(function(){ diffs = null; return {}; });
+Promise.all([diffs, get(API + 'cart-items/guest?guest_id=' + g.guestId, g)]).then(function(r){
+var items = Array.isArray(r[1]) ? r[1] : [];
+bs = items.filter(function(i){ return i.in_cart!==false; }).reduce(function(s, i){ return s + (r[0][i.product_id]||0) * (i.quantity||0); }, 0);
+at = Date.now(); busy = false; draw();
+}).catch(function(){ busy = false; });
+}
+function setVal(el, text){
+if (!el) return;
+el.classList.toggle('zb-wv', !!text);
+if (text&&el.getAttribute('data-zw')!==text) el.setAttribute('data-zw', text);
+}
+function draw(){
+// وفّرت مع العرض: نزود خصم الباندل على خصم EasyOrders
+var native = document.querySelectorAll('[data-invoice="invoice-total-savings"], [data-invoice="checkout-mobile-total-savings"]');
+native.forEach(function(s){
+var v = s.lastElementChild;
+if (v&&v!==s.firstElementChild) setVal(v, bs > 0 ? money(num(v) + bs) : '');
+});
+document.querySelectorAll('.zcx-sav').forEach(function(x){ if (native.length||bs <= 0) x.remove(); });
+if (!native.length&&bs > 0){
+document.querySelectorAll('[data-invoice="invoice-total"]').forEach(function(t){
+if (t.parentElement.querySelector('.zcx-sav')) return;
+var d = document.createElement('div');
+d.className = 'zcx-sav flex items-center gap-1.5 text-sm font-bold text-gray-900 mt-1';
+t.insertAdjacentElement('afterend', d);
+});
+var mob = document.querySelector('.checkout_mobile_total_toggle > span:last-child');
+if (mob&&mob.textContent.trim()&&!mob.querySelector('.zcx-sav')){
+var d2 = document.createElement('span');
+d2.className = 'zcx-sav flex items-center gap-1.5 text-xs font-bold mt-1';
+mob.appendChild(d2);
+}
+var html = '<span>🎁 وفّرت مع العرض</span><span>' + money(bs) + '</span>';
+document.querySelectorAll('.zcx-sav').forEach(function(x){ if (x.innerHTML!==html) x.innerHTML = html; });
+}
+// السعر المشطوب في ملخص الطلب
+var box = document.querySelector('#checkout-order-summary-toggle > span:last-child');
+if (!box) return;
+var struck = box.querySelector('.line-through:not(.zcx-was)');
+var own = box.querySelector('.zcx-was');
+if (struck){
+if (own) own.remove();
+setVal(struck, bs > 0 ? money(num(struck) + bs) : '');
+} else if (bs > 0){
+var text = money(num(box) + bs);
+if (!own){ own = document.createElement('span'); own.className = 'zcx-was'; box.insertBefore(own, box.firstChild); }
+if (own.textContent!==text) own.textContent = text;
+} else if (own) own.remove();
+}
+var st = document.createElement('style');
+st.textContent = '.zcx-was{font-size:14px;color:#6b7280;text-decoration:line-through;font-weight:400;margin-inline-end:8px}.zcx-sav span:last-child{color:#16a34a}';
+document.head.appendChild(st);
+var t = 0;
+function tick(){
+if (location.pathname.indexOf('/checkout')!==0) return;
+if (Date.now() - at > 3000) refresh(); else draw();
+}
+function start(){
+new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tick, 150); }).observe(document.body, { childList: true, subtree: true, characterData: true });
+tick();
+}
+if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
