@@ -1,4 +1,4 @@
-// Zella: إضافة خصم الباندلز في صفحة إتمام الطلب (وفّرت مع العرض + السعر المشطوب)
+// Zella: إضافة خصم الباندلز في صفحة إتمام الطلب وصفحة الشكر (وفّرت مع العرض + السعر المشطوب)
 (function(){
 var CAT = '83a341ea-2ab6-4ed3-82e8-0ff3b60b3f19';
 var API = 'https://api.easy-orders.net/api/v1/';
@@ -70,11 +70,64 @@ if (!own){ own = document.createElement('span'); own.className = 'zcx-was'; box.
 if (own.textContent!==text) own.textContent = text;
 } else if (own) own.remove();
 }
+// صفحة الشكر: نحسب خصم الباندل من المنتجات المكتوبة في الطلب
+var names = null;
+function drawThanks(){
+var g = guest();
+if (!names) names = get(API + 'products?limit=500&page=1&fields=id,name,price,sale_price&category_id=' + CAT, g).then(function(j){
+var m = {};
+((j&&j.data)||[]).forEach(function(p){ if (p.sale_price&&p.price > p.sale_price) m[p.name.trim()] = p.price - p.sale_price; });
+return m;
+}).catch(function(){ names = null; return {}; });
+names.then(function(m){
+var save = 0;
+document.querySelectorAll('h4').forEach(function(h){
+var d = m[h.textContent.trim()];
+if (!d) return;
+var q = [].filter.call(h.parentElement.querySelectorAll('p'), function(p){ return /عدد القطع/.test(p.textContent); })[0];
+save += d * (q ? num(q)||1 : 1);
+});
+if (save <= 0) return;
+var dts = [].slice.call(document.querySelectorAll('dt'));
+var subDt = dts.filter(function(d){ return /اجمالي المنتجات/.test(d.textContent); })[0];
+var shipDt = dts.filter(function(d){ return /تكلفة الشحن/.test(d.textContent); })[0];
+var totDt = dts.filter(function(d){ return /^\s*الاجمالي/.test(d.textContent); })[0];
+if (!subDt||!totDt) return;
+setVal(subDt.lastElementChild, money(num(subDt.lastElementChild) + save));
+var row = document.querySelector('.zcx-row');
+if (!row){
+var grp = dts.filter(function(d){ return d.textContent.trim()==='خصم المنتجات'; })[0];
+grp = grp ? grp.parentElement : null;
+if (!grp){
+grp = document.createElement('div');
+grp.className = 'space-y-1';
+grp.innerHTML = '<dt class="text-gray-500">خصم المنتجات</dt>';
+(shipDt||subDt).insertAdjacentElement('afterend', grp);
+}
+row = document.createElement('dt');
+row.className = 'zcx-row flex flex-wrap justify-between';
+grp.appendChild(row);
+}
+var html = '<span class="flex items-center gap-1 text-sm text-gray-400">🎁 عرض الباندل</span><div class="flex items-center gap-1">- ' + money(save) + '</div>';
+if (row.innerHTML!==html) row.innerHTML = html;
+var sv = document.querySelector('[data-invoice="invoice-total-savings"]');
+if (sv){
+var l = sv.firstElementChild;
+if (sv.lastElementChild!==l) setVal(sv.lastElementChild, money(num(sv.lastElementChild) + save));
+} else if (!document.querySelector('.zcx-tsav')){
+var d2 = document.createElement('div');
+d2.className = 'zcx-tsav zcx-sav flex items-center gap-1.5 text-sm font-bold text-gray-900';
+d2.innerHTML = '<span>🎁 وفّرت مع العرض</span><span>' + money(save) + '</span>';
+totDt.insertAdjacentElement('afterend', d2);
+}
+});
+}
 var st = document.createElement('style');
 st.textContent = '.zcx-was{font-size:14px;color:#6b7280;text-decoration:line-through;font-weight:400;margin-inline-end:8px}.zcx-sav span:last-child{color:#16a34a}';
 document.head.appendChild(st);
 var t = 0;
 function tick(){
+if (location.pathname.indexOf('/thanks')===0) return drawThanks();
 if (location.pathname.indexOf('/checkout')!==0) return;
 if (Date.now() - at > 3000) refresh(); else draw();
 }
