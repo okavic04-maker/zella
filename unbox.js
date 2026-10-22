@@ -129,7 +129,7 @@
     muteplay(b);
   }
 
-  function newestFirst() { // men & women collections open on "الأحدث" so the newest perfumes come first    if (/^\/collections\/(men|women)\/?$/.test(location.pathname) && !/[?&]sort=/.test(location.search)) { location.replace(location.pathname + '?sort=created_at%2Cdesc'); return; }    [].slice.call(document.querySelectorAll('a[href="/collections/men"],a[href="/collections/women"]')).forEach(function (a) { a.setAttribute('href', a.getAttribute('href') + '?sort=created_at%2Cdesc'); });  }  var view = null;
+  function newestFirst() { /* men & women collections open on "الأحدث" so the newest perfumes come first */ if (/^\/collections\/(men|women)\/?$/.test(location.pathname) && !/[?&]sort=/.test(location.search)) { location.replace(location.pathname + '?sort=created_at%2Cdesc'); return; }    [].slice.call(document.querySelectorAll('a[href="/collections/men"],a[href="/collections/women"]')).forEach(function (a) { a.setAttribute('href', a.getAttribute('href') + '?sort=created_at%2Cdesc'); });  }  var view = null;
   function close() {
     if (!view) return;
     view.remove(); view = null;
