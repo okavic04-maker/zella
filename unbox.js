@@ -34,6 +34,7 @@
     + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center}'
     + '.zub-view video{max-width:100%;max-height:100%;border-radius:12px;background:#000}'
     + '.zub-bar{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.35);border-radius:2px;z-index:2}'
+    + '.zub-bar{display:flex;gap:4px;background:none}.zub-bar s{flex:1;height:100%;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden;text-decoration:none}'
     + '.zub-bar i{display:block;height:100%;width:0;background:#fff;border-radius:2px}'
     + '.zub-x{position:absolute;top:16px;right:10px;z-index:3;background:none;border:0;color:#fff;font-size:32px;line-height:1;cursor:pointer}'
     + '.zub-a{position:absolute;top:50%;left:8px;z-index:3;width:34px;height:34px;margin-top:-17px;border-radius:50%;background:rgba(255,255,255,.85);color:#000;font:700 26px/30px Arial;text-align:center;cursor:pointer}'
@@ -151,7 +152,7 @@
     var v = list[i], p = info[v.s];
     openView();
     view.dataset.i = i;
-    view.innerHTML = '<div class="zub-bar"><i></i></div>'
+    view.innerHTML = '<div class="zub-bar">' + list.map(function (x, k) { return '<s><i' + (k < i ? ' style="width:100%"' : '') + '></i></s>'; }).join('') + '</div>'
       + '<button type="button" class="zub-x" aria-label="Close">×</button>'
       + '<video src="' + CDN + v.f + '.mp4" poster="' + CDN + v.f + '-card.jpg" playsinline preload="auto"></video>'
       + '<b class="zub-a">‹</b><b class="zub-a r">›</b>'
@@ -159,7 +160,7 @@
       + '<div class="zub-foot"><a href="/products/' + v.s + '">View</a>'
       + (soldOut(p) ? '<button type="button" class="zub-add so" disabled>Out of Stock</button></div>'
         : '<button type="button" class="zub-add">' + (p ? 'Add to Cart · ' + money(priceOf(p)) + ' EGP' : 'Add to Cart') + '</button></div>');
-    var vid = view.querySelector('video'), bar = view.querySelector('.zub-bar i');
+    var vid = view.querySelector('video'), bar = view.querySelectorAll('.zub-bar i')[i];
     vid.addEventListener('timeupdate', function () { if (vid.duration) bar.style.width = (vid.currentTime / vid.duration * 100) + '%'; });
     vid.addEventListener('ended', function () { show(i + 1); });
     var pl = vid.play();
