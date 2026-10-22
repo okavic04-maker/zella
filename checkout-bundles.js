@@ -63,7 +63,9 @@ if (struck){
 if (own) own.remove();
 setVal(struck, bs > 0 ? money(num(struck) + bs) : '');
 } else if (bs > 0){
-var text = money(num(box) + bs);
+var c = box.cloneNode(true), o = c.querySelector('.zcx-was');
+if (o) o.remove();
+var text = money(num(c) + bs);
 if (!own){ own = document.createElement('span'); own.className = 'zcx-was'; box.insertBefore(own, box.firstChild); }
 if (own.textContent!==text) own.textContent = text;
 } else if (own) own.remove();
