@@ -20,6 +20,12 @@
     'bundle23-1000': [
       { s: 'bvg', n: 'Bvlgari Man in Black' },
       { s: 'sauvel', n: 'Sauvage Elixir' }
+    ],
+    '4mokrrwith999': [
+      { s: 'lIntense', n: 'Libre EDP Intense' },
+      { s: 'VersaceErosEaudeParfum', n: 'Versace Eros EDP' },
+      { s: 'Baccarat04', n: 'Baccarat Rouge 540 Mini', gift: true },
+      { s: 'Baccarat', n: 'Baccarat Rouge 540 Extrait Mini', gift: true }
     ]
   };
   var thumbs = {};
