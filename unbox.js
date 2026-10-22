@@ -2,7 +2,7 @@
    To add a video: upload <name>.mp4, <name>-card.mp4 and <name>-card.jpg to the repo, add a line to VIDS,
    and set CDN to the new commit (jsDelivr is slow to refresh files on @main). */
 (function () {
-  var CDN = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@8a84e22e5f/';
+  var CDN = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@201f0b71d3/';
   var API = 'https://api.easy-orders.net/api/v1/';
   var VIDS = [
     { f: 'uomo-born-in-roma', n: 'Valentino Uomo Born in Roma', s: 'borninroma', g: 'm' },
@@ -10,6 +10,8 @@
     { f: 'ysl-y-edp', n: 'YSL Y EDP', s: 'yysl', g: 'm' },
     { f: 'black-orchid', n: 'Tom Ford Black Orchid', s: 'orcblack', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros'] },
     { f: 'bleu-de-chanel', n: 'Bleu de Chanel EDP', s: 'bleuchanel', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros'] },
+    { f: 'dior-sauvage', n: 'Dior Sauvage EDP', s: 'sauvagehigh', g: 'm', b: ['bundle2-999111'] },
+    { f: '212-sexy-men', n: '212 Sexy Men', s: 'sexyman', g: 'm', b: ['bundle2-999111'] },
     { f: 'versace-eros', n: 'Versace Eros EDP', s: 'VersaceErosEaudeParfum', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros', 'bundle2-999111'] }
   ];
   // b = bundle pages that also show this video (all the bundle's videos play one after another)
