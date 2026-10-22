@@ -1,7 +1,8 @@
 /* Zella Store: show the perfumes inside a bundle as image cards, each one links to its product page.
    To add a bundle: add a line to BUNDLES with the bundle slug and the slugs of its perfumes.
    Also in the cart: products from the Bundle Offers section get "عرض الباندل" instead of "خارج العرض"
-   (that tag comes from the Buy-2-get-1 script in the head code, which is at the store's size limit). */
+   (that tag comes from the Buy-2-get-1 script in the head code, which is at the store's size limit).
+   When the cart holds bundles only, the Buy-2-get-1 progress bar shows the bundle offer as already done, in green. */
 (function () {
   var API = 'https://api.easy-orders.net/api/v1/';
   var LABELS = ['النوع الأول', 'النوع التاني', 'النوع التالت', 'النوع الرابع'];
@@ -26,7 +27,12 @@
     + '#zbt .h{font-size:12px;color:#9ca3af;margin-top:-4px}'
     + '[data-zbt-bundle] .zb-tag-out{display:none}'
     + '.zbt-cart{margin-top:6px;font-size:12px}'
-    + '.zbt-cart span{display:inline-block;background:#16a34a;color:#fff;border-radius:4px;padding:2px 8px;font-weight:700}';
+    + '.zbt-cart span{display:inline-block;background:#16a34a;color:#fff;border-radius:4px;padding:2px 8px;font-weight:700}'
+    + '[data-zbt-all] #zella-bogo-bar .zb-msg,[data-zbt-all] #zella-bogo-bar .zb-progress{display:none}'
+    + '#zbt-bar{margin:0 0 8px;padding:12px 14px 4px;border:1px solid #bbf7d0;border-radius:12px;background:#f0fdf4;text-align:center}'
+    + '#zbt-bar p{margin:0 0 10px;font-size:14px;font-weight:700;color:#15803d}'
+    + '#zbt-bar .tr{position:relative;height:8px;margin:0 12px 14px;border-radius:8px;background:#16a34a}'
+    + '#zbt-bar .tr i{position:absolute;top:50%;width:24px;height:24px;margin:-12px -12px 0 0;border-radius:50%;background:#16a34a;color:#fff;font-size:12px;font-style:normal;font-weight:700;line-height:24px}';
 
   function slug() { var m = location.pathname.match(/^\/products\/([^\/?#]+)/); return m && decodeURIComponent(m[1]); }
 
@@ -85,6 +91,27 @@
         tag.className = 'zbt-cart'; tag.innerHTML = '<span>🎁 عرض الباندل</span>';
         host.appendChild(tag);
       });
+    });
+    bundleBar();
+  }
+  function bundleBar() {
+    var bar = document.getElementById('zella-bogo-bar'), mine = document.getElementById('zbt-bar');
+    var items = [].slice.call(document.querySelectorAll('[data-cart="item"]'));
+    var section = bar && bar.parentElement;
+    function off() { if (mine) mine.remove(); if (section) section.removeAttribute('data-zbt-all'); }
+    if (!bar || !items.length) return off();
+    Promise.all(items.map(function (li) {
+      var a = li.querySelector('a[href*="/products/"]');
+      return a ? bundleOf(decodeURIComponent(a.getAttribute('href').split('/products/')[1].split(/[?#]/)[0])) : false;
+    })).then(function (all) {
+      if (!all.every(Boolean)) return off();
+      section.setAttribute('data-zbt-all', '');
+      if (document.getElementById('zbt-bar')) return;
+      var el = document.createElement('div');
+      el.id = 'zbt-bar';
+      el.innerHTML = '<p>🎁 عرض الباندل مفعّل — الخصم محسوب في السعر</p><div class="tr">'
+        + [1, 2, 3].map(function (n) { return '<i style="right:' + (n * 100 / 3) + '%">✓</i>'; }).join('') + '</div>';
+      bar.parentElement.insertBefore(el, bar);
     });
   }
 
