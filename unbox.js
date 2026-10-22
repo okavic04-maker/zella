@@ -10,7 +10,7 @@
     { f: 'ysl-y-edp', n: 'YSL Y EDP', s: 'yysl', g: 'm' },
     { f: 'black-orchid', n: 'Tom Ford Black Orchid', s: 'orcblack', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros'] },
     { f: 'bleu-de-chanel', n: 'Bleu de Chanel EDP', s: 'bleuchanel', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros'] },
-    { f: 'versace-eros', n: 'Versace Eros EDP', s: 'VersaceErosEaudeParfum', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros'] }
+    { f: 'versace-eros', n: 'Versace Eros EDP', s: 'VersaceErosEaudeParfum', g: 'm', b: ['bundle-2plus1-orchid-bleu-eros', 'bundle2-999111'] }
   ];
   // b = bundle pages that also show this video (all the bundle's videos play one after another)
   function onPage(x, slug) { return x.s === slug || (x.b && x.b.indexOf(slug) > -1); }
@@ -32,7 +32,7 @@
     + '#zub .pr s{display:block;font-size:11px;font-weight:600;opacity:.75}'
     + '#zub .off{position:absolute;right:8px;bottom:10px;z-index:1;background:#c9a24d;color:#000;font-size:11px;font-weight:800;padding:3px 7px;border-radius:20px}'
     + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center}'
-    + '.zub-view video{max-width:calc(100% - 32px);max-height:calc(100% - 150px);border-radius:12px;background:#000}'
+    + '.zub-view video{max-width:100%;max-height:100%;border-radius:12px;background:#000}'
     + '.zub-bar{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.35);border-radius:2px;z-index:2}'
     + '.zub-bar{display:flex;gap:4px;background:none}.zub-bar s{flex:1;height:100%;background:rgba(255,255,255,.35);border-radius:2px;overflow:hidden;text-decoration:none}'
     + '.zub-bar i{display:block;height:100%;width:0;background:#fff;border-radius:2px}'
@@ -227,7 +227,7 @@
     if (e.target.closest('.zub-end')) return;
     var a = e.target.closest('.zub-a');
     if (a) return show(a.classList.contains('r') ? i + 1 : i - 1);
-    if (e.target.tagName === 'VIDEO') { var vd = e.target, rc = vd.getBoundingClientRect(), x = (e.clientX - rc.left) / rc.width; if (x < 0.3) return show(i - 1); if (x > 0.7) return show(i + 1); vd.paused ? vd.play() : vd.pause(); return; } // شمال/يمين الفيديو = السابق/التالي، النص = إيقاف/تشغيل
+    if (e.target.tagName === 'VIDEO') { var vd = e.target; vd.paused ? vd.play() : vd.pause(); return; } // دوسة على الفيديو = إيقاف/تشغيل
     if (e.target.closest('.zub-foot')) return;
     close(); // برا الفيديو = قفل
   });
