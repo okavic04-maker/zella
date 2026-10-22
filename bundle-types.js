@@ -1,5 +1,7 @@
 /* Zella Store: show the perfumes inside a bundle as image cards, each one links to its product page.
-   To add a bundle: add a line to BUNDLES with the bundle slug and the slugs of its perfumes. */
+   To add a bundle: add a line to BUNDLES with the bundle slug and the slugs of its perfumes.
+   Also in the cart: products from the Bundle Offers section get "عرض الباندل" instead of "خارج العرض"
+   (that tag comes from the Buy-2-get-1 script in the head code, which is at the store's size limit). */
 (function () {
   var API = 'https://api.easy-orders.net/api/v1/';
   var LABELS = ['النوع الأول', 'النوع التاني', 'النوع التالت', 'النوع الرابع'];
@@ -21,7 +23,10 @@
     + '#zbt a{position:relative;display:block;width:120px;height:120px;border:2px solid #111;border-radius:14px;overflow:hidden;background:#000}'
     + '#zbt img{width:100%;height:100%;object-fit:cover;display:block}'
     + '#zbt a i{position:absolute;bottom:4px;left:4px;background:#000;color:#fff;font-style:normal;font-size:10px;font-weight:700;border-radius:12px;padding:2px 7px}'
-    + '#zbt .h{font-size:12px;color:#9ca3af;margin-top:-4px}';
+    + '#zbt .h{font-size:12px;color:#9ca3af;margin-top:-4px}'
+    + '[data-zbt-bundle] .zb-tag-out{display:none}'
+    + '.zbt-cart{margin-top:6px;font-size:12px}'
+    + '.zbt-cart span{display:inline-block;background:#16a34a;color:#fff;border-radius:4px;padding:2px 8px;font-weight:700}';
 
   function slug() { var m = location.pathname.match(/^\/products\/([^\/?#]+)/); return m && decodeURIComponent(m[1]); }
 
@@ -53,10 +58,41 @@
     block.parentElement.insertBefore(el, block.nextSibling);
   }
 
+  var isBundle = {};
+  function bundleOf(s) { // same product data the store's cart script reads
+    if (isBundle[s] !== undefined) return Promise.resolve(isBundle[s]);
+    var build = window.__NEXT_DATA__ && window.__NEXT_DATA__.buildId;
+    if (!build) return Promise.resolve(false);
+    return isBundle[s] = fetch('/_next/data/' + build + '/products/' + encodeURIComponent(s) + '.json?id=' + encodeURIComponent(s))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var cats = (j && j.pageProps && j.pageProps.product && j.pageProps.product.categories) || [];
+        return isBundle[s] = cats.some(function (c) { return c.slug === 'savingspackagesoffers'; });
+      })
+      .catch(function () { delete isBundle[s]; return false; });
+  }
+  // the store's cart script rewrites its own tag, so we hide it and add our label next to it
+  function fixCartTags() {
+    [].slice.call(document.querySelectorAll('[data-cart="item"]')).forEach(function (li) {
+      if (li.hasAttribute('data-zbt-bundle') || !li.querySelector('.zb-tag-out')) return;
+      var a = li.querySelector('a[href*="/products/"]'), host = li.querySelector('[data-cart="item-info"]');
+      if (!a || !host) return;
+      var s = decodeURIComponent(a.getAttribute('href').split('/products/')[1].split(/[?#]/)[0]);
+      bundleOf(s).then(function (yes) {
+        if (!yes || !li.isConnected || li.hasAttribute('data-zbt-bundle')) return;
+        li.setAttribute('data-zbt-bundle', '');
+        var tag = document.createElement('div');
+        tag.className = 'zbt-cart'; tag.innerHTML = '<span>🎁 عرض الباندل</span>';
+        host.appendChild(tag);
+      });
+    });
+  }
+
   var t;
   function schedule() {
     clearTimeout(t);
     t = setTimeout(function () {
+      fixCartTags();
       var list = BUNDLES[slug()];
       if (list) loadThumbs(list, render); else render();
     }, 120);
