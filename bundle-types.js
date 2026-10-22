@@ -11,6 +11,15 @@
       { s: 'orcblack', n: 'Tom Ford Black Orchid' },
       { s: 'bleuchanel', n: 'Bleu de Chanel EDP' },
       { s: 'VersaceErosEaudeParfum', n: 'Versace Eros EDP', gift: true }
+    ],
+    'bundle2-999111': [
+      { s: 'sauvagehigh', n: 'Dior Sauvage EDP' },
+      { s: 'sexyman', n: '212 Sexy Men' },
+      { s: 'VersaceErosEaudeParfum', n: 'Versace Eros EDP', gift: true }
+    ],
+    'bundle23-1000': [
+      { s: 'bvg', n: 'Bvlgari Man in Black' },
+      { s: 'sauvel', n: 'Sauvage Elixir' }
     ]
   };
   var thumbs = {};
@@ -48,12 +57,13 @@
   function render() {
     var s = slug(), list = s && BUNDLES[s], old = document.getElementById('zbt');
     if (!list) { if (old) old.remove(); return; }
-    var h = document.querySelector('h2.variation_name');
-    if (!h) return;
-    var block = h.parentElement.parentElement; // the "محتوى العرض" option, already selected
+    var hs = document.querySelectorAll('h2.variation_name');
+    if (!hs.length) return;
+    var blocks = [].map.call(hs, function (x) { return x.parentElement.parentElement; }); // the bundle's options (one or more), already selected
+    var block = blocks[blocks.length - 1];
     if (old && old.dataset.s === s && block.style.display === 'none') return;
     if (old) old.remove();
-    block.style.display = 'none';
+    blocks.forEach(function (b) { b.style.display = 'none'; });
     var el = document.createElement('div');
     el.id = 'zbt'; el.dataset.s = s;
     el.innerHTML = list.map(function (p, i) {
