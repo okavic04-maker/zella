@@ -31,7 +31,7 @@
     + '#zub .pr{position:absolute;left:8px;bottom:9px;z-index:1;color:#fff;font-size:14px;font-weight:800;text-align:left}'
     + '#zub .pr s{display:block;font-size:11px;font-weight:600;opacity:.75}'
     + '#zub .off{position:absolute;right:8px;bottom:10px;z-index:1;background:#c9a24d;color:#000;font-size:11px;font-weight:800;padding:3px 7px;border-radius:20px}'
-    + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:center;justify-content:center}'
+    + '.zub-view{direction:ltr;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center}'
     + '.zub-view video{max-width:100%;max-height:100%;border-radius:12px;background:#000}'
     + '.zub-bar{position:absolute;top:10px;left:10px;right:10px;height:3px;background:rgba(255,255,255,.35);border-radius:2px;z-index:2}'
     + '.zub-bar i{display:block;height:100%;width:0;background:#fff;border-radius:2px}'
@@ -129,7 +129,7 @@
     muteplay(b);
   }
 
-  var view = null;
+  function newestFirst() { // men & women collections open on "الأحدث" so the newest perfumes come first    if (/^\/collections\/(men|women)\/?$/.test(location.pathname) && !/[?&]sort=/.test(location.search)) { location.replace(location.pathname + '?sort=created_at%2Cdesc'); return; }    [].slice.call(document.querySelectorAll('a[href="/collections/men"],a[href="/collections/women"]')).forEach(function (a) { a.setAttribute('href', a.getAttribute('href') + '?sort=created_at%2Cdesc'); });  }  var view = null;
   function close() {
     if (!view) return;
     view.remove(); view = null;
@@ -232,6 +232,6 @@
   });
 
   var t;
-  new MutationObserver(function () { clearTimeout(t); t = setTimeout(render, 120); }).observe(document.body, { childList: true, subtree: true });
-  render();
+  new MutationObserver(function () { clearTimeout(t); t = setTimeout(function () { render(); newestFirst(); }, 120); }).observe(document.body, { childList: true, subtree: true });
+  render(); newestFirst();
 })();
