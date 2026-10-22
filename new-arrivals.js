@@ -16,8 +16,8 @@ get(API + 'products?limit=60&page=1&sort=created_at&order=desc&fields=id,name,sl
 var skip = {};
 ((r[0]&&r[0].data)||[]).forEach(function(p){ skip[p.id] = 1; });
 return ((r[1]&&r[1].data)||[]).filter(function(p){
-var out = p.track_stock&&p.disable_orders_for_no_stock&&p.quantity <= 0;
-return !p.hidden&&!skip[p.id]&&!out;
+p.out = p.track_stock&&p.disable_orders_for_no_stock&&p.quantity <= 0;
+return !p.hidden&&!skip[p.id];
 });
 }).catch(function(){ list = null; return []; });
 return list;
@@ -68,6 +68,15 @@ badge.setAttribute('dir', 'ltr');
 if (badge){
 badge.style.display = old ? '' : 'none';
 if (old) badge.textContent = '-' + Math.round((old - price) / old * 100) + '%';
+}
+// اللي خلص من المخزون يظهر بزرار مقفول
+var btn = card.querySelector(':scope > button');
+if (btn){
+if (!btn.hasAttribute('data-zt')) btn.setAttribute('data-zt', btn.textContent.trim());
+var ar = /[؀-ۿ]/.test(btn.getAttribute('data-zt'));
+btn.textContent = p.out ? (ar ? 'نفذ المخزون' : 'Out of Stock') : (/نفذ|out of stock/i.test(btn.getAttribute('data-zt')) ? (ar ? 'أضف للسلة' : 'Add to Cart') : btn.getAttribute('data-zt'));
+btn.disabled = !!p.out;
+btn.style.opacity = p.out ? '0.5' : '';
 }
 }
 function draw(){
