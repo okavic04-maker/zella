@@ -145,5 +145,6 @@
     new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
     schedule();
   }
-  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  function go() { setTimeout(start, 300); } // start after the page has loaded, so React's first render isn't disturbed
+  if (document.readyState === 'complete') go(); else addEventListener('load', go);
 })();

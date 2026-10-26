@@ -77,12 +77,29 @@
     if (infoLoading) return; infoLoading = true;
     fetch(API + 'products?limit=20&fields=id,slug,price,sale_price,quantity,track_stock&filter=slug||$in||' + VIDS.map(function (v) { return v.s; }).join(','))
       .then(function (r) { return r.json(); })
-      .then(function (j) { (j.data || j || []).forEach(function (p) { info[p.slug] = p; }); var el = document.getElementById('zub'); if (el) el.remove(); render(); })
+      .then(function (j) { (j.data || j || []).forEach(function (p) { info[p.slug] = p; }); fillPrices(); })
       .catch(function () {});
   }
   function money(x) { return Math.round(x).toLocaleString('en-US'); }
   function priceOf(p) { return p.sale_price && p.sale_price < p.price ? p.sale_price : p.price; }
   function soldOut(p) { return p && p.track_stock && !(p.quantity > 0); }
+
+  function cardInfo(v) { // price + discount / sold-out tag on a card
+    var p = info[v.s];
+    if (!p) return '';
+    var now = priceOf(p), off = '';
+    if (now < p.price) off = '<span class="off">-' + Math.round((1 - now / p.price) * 100) + '%</span>';
+    if (soldOut(p)) off = '<span class="off so">Sold out</span>';
+    return '<span class="pr">' + (now < p.price ? '<s>' + money(p.price) + ' EGP</s>' : '') + money(now) + ' EGP</span>' + off;
+  }
+  function fillPrices() { // prices arrived: add them to the cards in place, so the card videos don't download again
+    var el = document.getElementById('zub');
+    if (!el) return;
+    el.querySelectorAll('[data-zub]').forEach(function (b) {
+      if (b.querySelector('.pr')) return;
+      b.insertAdjacentHTML('beforeend', cardInfo(list[+b.getAttribute('data-zub')]));
+    });
+  }
 
   function render() {
     renderProductPage();
@@ -100,15 +117,8 @@
       + '<div class="tabs">' + [['', 'All'], ['m', 'For Him'], ['w', 'For Her']].map(function (x) { return '<b data-zubf="' + x[0] + '"' + (filter === x[0] ? ' class="on"' : '') + '>' + x[1] + '</b>'; }).join('') + '</div>'
       + '<div class="row">'
       + list.map(function (v, i) {
-        var p = info[v.s], price = '', off = '';
-        if (p) {
-          var now = priceOf(p);
-          price = '<span class="pr">' + (now < p.price ? '<s>' + money(p.price) + ' EGP</s>' : '') + money(now) + ' EGP</span>';
-          if (now < p.price) off = '<span class="off">-' + Math.round((1 - now / p.price) * 100) + '%</span>';
-          if (soldOut(p)) off = '<span class="off so">Sold out</span>';
-        }
         return '<button type="button" data-zub="' + i + '"><video src="' + CDN + v.f + '-card.mp4" poster="' + CDN + v.f + '-card.jpg" muted autoplay loop playsinline preload="metadata"></video>'
-          + '<span class="p"></span><span class="n">' + v.n + '</span>' + price + off + '</button>';
+          + '<span class="p"></span><span class="n">' + v.n + '</span>' + cardInfo(v) + '</button>';
       }).join('') + '</div>';
     anchor.parentElement.insertBefore(el, anchor.nextSibling);
     muteplay(el);
@@ -239,6 +249,10 @@
   });
 
   var t;
-  new MutationObserver(function () { clearTimeout(t); t = setTimeout(function () { render(); newestFirst(); }, 120); }).observe(document.body, { childList: true, subtree: true });
-  render(); newestFirst();
+  function start() {
+    new MutationObserver(function () { clearTimeout(t); t = setTimeout(function () { render(); newestFirst(); }, 120); }).observe(document.body, { childList: true, subtree: true });
+    render(); newestFirst();
+  }
+  function go() { setTimeout(start, 300); } // start after the page has loaded, so React's first render isn't disturbed
+  if (document.readyState === 'complete') go(); else addEventListener('load', go);
 })();

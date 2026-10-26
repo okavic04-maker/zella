@@ -1,4 +1,4 @@
-// Zella: قسم "وصلت حديثا" في الرئيسية يعرض أحدث البرفانات تلقائي (من غير الباندلز والمخفي واللي خلص من المخزون)
+// Zella: قسم "وصلت حديثا" في الرئيسية يعرض أحدث البرفانات تلقائي (من غير الباندلز والمخفي؛ اللي خلص من المخزون بيظهر "نفذ المخزون" ويرجع عادي لما المخزون يرجع)
 (function(){
 var TITLES = /^(وصلت حديثا|New Arrivals)$/;
 var BUNDLES = '83a341ea-2ab6-4ed3-82e8-0ff3b60b3f19';
@@ -139,5 +139,6 @@ function start(){
 new MutationObserver(function(){ clearTimeout(t); t = setTimeout(draw, 200); }).observe(document.body, { childList: true, subtree: true });
 draw();
 }
-if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+function go(){ setTimeout(start, 300); } // نبدأ بعد ما الصفحة تخلص تحميل علشان منبوظش أول رسم لـ React
+if (document.readyState==='complete') go(); else addEventListener('load', go);
 })();

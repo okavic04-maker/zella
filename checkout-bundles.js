@@ -135,5 +135,6 @@ function start(){
 new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tick, 150); }).observe(document.body, { childList: true, subtree: true, characterData: true });
 tick();
 }
-if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+function go(){ setTimeout(start, 300); } // نبدأ بعد ما الصفحة تخلص تحميل علشان منبوظش أول رسم لـ React
+if (document.readyState==='complete') go(); else addEventListener('load', go);
 })();
