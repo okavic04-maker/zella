@@ -132,7 +132,7 @@ if (location.pathname.indexOf('/checkout')!==0) return;
 if (Date.now() - at > 3000) refresh(); else draw();
 }
 function start(){
-new MutationObserver(function(){ if (t) return; t = setTimeout(function(){ t = 0; tick(); }, 150); }) // يشتغل كل 150ms على الأقل حتى لو الصفحة لسه بتتغير.observe(document.body, { childList: true, subtree: true, characterData: true });
+new MutationObserver(function(){ if (t) return; t = setTimeout(function(){ t = 0; tick(); }, 150); }).observe(document.body, { childList: true, subtree: true, characterData: true }); // يشتغل كل 150ms على الأقل حتى لو الصفحة لسه بتتغير
 tick();
 }
 var gone;

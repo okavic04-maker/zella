@@ -136,7 +136,7 @@ if (b&&!document.querySelector('[data-cart="items-section"]')) b.click();
 .then(function(){ btn.disabled = false; });
 }, true);
 function start(){
-new MutationObserver(function(){ if (t) return; t = setTimeout(function(){ t = 0; draw(); }, 200); }) // يشتغل كل 200ms على الأقل حتى لو الصفحة لسه بتتغير.observe(document.body, { childList: true, subtree: true });
+new MutationObserver(function(){ if (t) return; t = setTimeout(function(){ t = 0; draw(); }, 200); }).observe(document.body, { childList: true, subtree: true }); // يشتغل كل 200ms على الأقل حتى لو الصفحة لسه بتتغير
 draw();
 }
 var gone;

@@ -250,7 +250,7 @@
 
   var t;
   function start() {
-    new MutationObserver(function () { if (t) return; t = setTimeout(function () { t = 0; render(); newestFirst(); }, 120); }) // runs at least every 120ms while the page keeps changing.observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(function () { if (t) return; t = setTimeout(function () { t = 0; render(); newestFirst(); }, 120); }).observe(document.body, { childList: true, subtree: true }); // runs at least every 120ms while the page keeps changing
     render(); newestFirst();
   }
   var gone;

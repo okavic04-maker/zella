@@ -69,7 +69,7 @@
   var t;
   function start() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
-    new MutationObserver(function () { if (t) return; t = setTimeout(function () { t = 0; run(); }, 150); }) // runs at least every 150ms while the page keeps changing.observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(function () { if (t) return; t = setTimeout(function () { t = 0; run(); }, 150); }).observe(document.body, { childList: true, subtree: true }); // runs at least every 150ms while the page keeps changing
     run();
   }
   var gone;
