@@ -135,6 +135,12 @@ function start(){
 new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tick, 150); }).observe(document.body, { childList: true, subtree: true, characterData: true });
 tick();
 }
-function go(){ setTimeout(start, 300); } // نبدأ بعد ما الصفحة تخلص تحميل علشان منبوظش أول رسم لـ React
-if (document.readyState==='complete') go(); else addEventListener('load', go);
+var gone;
+function go(){ // نبدأ أول ما React يمسك الصفحة (أو عند التحميل) علشان منبوظش أول رسم ليه
+if (gone) return;
+var m = document.querySelector('main');
+if (document.readyState==='complete'||(m&&Object.keys(m).some(function(k){ return k.indexOf('__reactFiber')===0; }))){ gone = 1; setTimeout(start, 30); }
+else setTimeout(go, 50);
+}
+go();
 })();

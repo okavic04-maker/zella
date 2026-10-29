@@ -72,6 +72,12 @@
     new MutationObserver(function () { clearTimeout(t); t = setTimeout(run, 150); }).observe(document.body, { childList: true, subtree: true });
     run();
   }
-  function go() { setTimeout(start, 300); } // start after the page has loaded, so React's first render isn't disturbed
-  if (document.readyState === 'complete') go(); else addEventListener('load', go);
+  var gone;
+  function go() { // start as soon as React has taken over the page (or at load), so its first render isn't disturbed
+    if (gone) return;
+    var m = document.querySelector('main');
+    if (document.readyState === 'complete' || (m && Object.keys(m).some(function (k) { return k.indexOf('__reactFiber') === 0; }))) { gone = 1; setTimeout(start, 30); }
+    else setTimeout(go, 50);
+  }
+  go();
 })();
