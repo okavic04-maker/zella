@@ -133,8 +133,9 @@
 
   var t;
   function schedule() {
-    clearTimeout(t);
+    if (t) return; // runs at least every 120ms while the page keeps changing
     t = setTimeout(function () {
+      t = 0;
       fixCartTags();
       var list = BUNDLES[slug()];
       if (list) loadThumbs(list, render); else render();
