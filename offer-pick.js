@@ -13,6 +13,12 @@
     if (/[?&]v=offer\b/.test(location.search)) return true;
     try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; }
   }
+  // Slug of the video perfume whose page this is, for visitors who came from the ad link.
+  function pageSlug() {
+    var m = location.pathname.match(/^\/products\/([^\/?#]+)/);
+    if (!m || SLUGS.indexOf(m[1]) < 0) return null;
+    try { return sessionStorage.getItem(KEY) === '1' ? m[1] : null; } catch (e) { return null; }
+  }
 
   var css = '#zop{margin:0 0 18px;border-radius:16px;overflow:hidden;border:2px solid #14b8a6;background:#f0fdfa}' +
     '#zop .zop-h{background:#14b8a6;color:#fff;font-weight:800;font-size:17px;text-align:center;padding:10px 8px}' +
@@ -28,6 +34,7 @@
     '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-c.zop-ok{background:#16a34a}' +
     '#zop #zop-go{display:none;text-align:center;color:#f97316;font-weight:800;font-size:14px;padding:0 0 12px;text-decoration:underline}' +
+    '#zop.zop-pp{margin:18px 0 0}#zop.zop-pp .zop-g{grid-template-columns:repeat(2,1fr)}' +
     '@media(min-width:768px){#zop .zop-n{font-size:15px}#zop .zop-p b{font-size:22px}#zop .zop-g{gap:16px;padding:16px}}';
 
   var products = null, loading = false;
@@ -116,12 +123,28 @@
 
   function tick() {
     var box = document.getElementById('zop');
-    if (!active()) { if (box) box.remove(); return; }
+    var slug = pageSlug();
+    if (!active() && !slug) { if (box) box.remove(); return; }
     load();
     if (!products || !products.length) return;
-    var grid = document.querySelector('.category_products_grid_container');
-    if (!grid) return;
-    if (box && box.nextElementSibling === grid) return;
+    var anchor, list, title;
+    if (slug) {
+      // Product page of one of the video perfumes: offer the other two under the order buttons.
+      var buy = [].filter.call(document.querySelectorAll('.p_details_container button'), function (b) {
+        return b.textContent.trim() === 'أضف للسلة';
+      })[0];
+      anchor = buy && buy.parentNode;
+      if (!anchor) return;
+      if (box && box.previousElementSibling === anchor) return;
+      list = products.filter(function (p) { return p.slug !== slug; });
+      title = '🎬 كمّل أنواع الفيديو';
+    } else {
+      anchor = document.querySelector('.category_products_grid_container');
+      if (!anchor) return;
+      if (box && box.nextElementSibling === anchor) return;
+      list = products;
+      title = '🎬 الأنواع اللي في الفيديو';
+    }
     if (box) box.remove();
     if (!document.getElementById('zop-css')) {
       var st = document.createElement('style');
@@ -131,10 +154,12 @@
     }
     box = document.createElement('div');
     box.id = 'zop';
-    box.innerHTML = '<div class="zop-h">🎬 الأنواع اللي في الفيديو<small>اشتري 2 والتالتة هدية 🎁</small></div>' +
-      '<div class="zop-g">' + products.map(card).join('') + '</div>' +
+    if (slug) box.className = 'zop-pp';
+    box.innerHTML = '<div class="zop-h">' + title + '<small>اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚</small></div>' +
+      '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>';
-    grid.parentNode.insertBefore(box, grid);
+    if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
+    else anchor.parentNode.insertBefore(box, anchor);
   }
 
   setInterval(tick, 700);
