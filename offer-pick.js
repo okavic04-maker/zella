@@ -32,8 +32,10 @@
     '#zop .zop-h{background:#14b8a6;color:#fff;font-weight:800;font-size:17px;text-align:center;padding:10px 8px}' +
     '#zop .zop-h small{display:block;font-weight:600;font-size:13px;opacity:.95;margin-top:2px}' +
     '#zop .zop-end{background:#f97316;color:#fff;font-weight:800;font-size:13px;text-align:center;padding:5px 8px}' +
-    // Square crop of the vertical ad video: no black bars, and the cards still fit on the first phone screen.
-    '#zop video{display:block;width:100%;max-width:460px;margin:0 auto;aspect-ratio:1/1;height:auto;object-fit:cover;object-position:center 25%}' +
+    // The whole vertical ad video in the middle, with a blurred copy of it filling the sides instead of black bars.
+    '#zop .zop-v{position:relative;height:400px;overflow:hidden;background:#111}' +
+    '#zop .zop-v video{position:relative;display:block;height:100%;width:auto;max-width:100%;margin:0 auto;object-fit:contain}' +
+    '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
     '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop .zop-k a{display:flex;flex:1;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
@@ -258,7 +260,9 @@
     if (slug) box.className = 'zop-pp';
     box.innerHTML = '<div class="zop-h">' + title + '<small>اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚</small></div>' +
       (new Date() < END ? '<div class="zop-end">' + END_TEXT + '</div>' : '') +
-      (VIDEO && !slug ? '<video src="' + VIDEO + '" autoplay muted loop playsinline preload="metadata"></video>' : '') +
+      (VIDEO && !slug ? '<div class="zop-v">' +
+        '<video class="zop-vb" src="' + VIDEO + '" autoplay muted loop playsinline aria-hidden="true"></video>' +
+        '<video src="' + VIDEO + '" autoplay muted loop playsinline></video></div>' : '') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
         (allAdded ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة') + '</button>') +
