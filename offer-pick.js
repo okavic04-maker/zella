@@ -64,6 +64,18 @@
     try { return JSON.parse(localStorage.getItem('guest-id')).state.guestId; } catch (e) { return null; }
   }
 
+  // The theme keeps the cart in React Query under ['cart-items']; refetching it updates the header count.
+  function refreshCart() {
+    try {
+      var el = document.querySelector('header') || document.querySelector('.category_products_grid_container');
+      var fk = el && Object.keys(el).filter(function (k) { return k.indexOf('__reactFiber') === 0; })[0];
+      for (var f = fk && el[fk]; f; f = f.return) {
+        var c = f.memoizedProps && f.memoizedProps.client;
+        if (c && c.invalidateQueries) { c.invalidateQueries({ queryKey: ['cart-items'] }); return; }
+      }
+    } catch (e) {}
+  }
+
   // Same call the theme's own "add to cart" makes; the cart page reads it from the server.
   function addToCart(btn) {
     var gid = guestId();
@@ -77,6 +89,7 @@
     }).then(function (r) {
       if (!r.ok) throw 0;
       added[btn.getAttribute('data-id')] = 1;
+      refreshCart();
       btn.textContent = '✓ اتضاف للسلة';
       btn.className = 'zop-c zop-ok';
       var go = document.getElementById('zop-go');
