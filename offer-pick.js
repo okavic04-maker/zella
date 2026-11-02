@@ -18,13 +18,16 @@
     '#zop .zop-h{background:#14b8a6;color:#fff;font-weight:800;font-size:17px;text-align:center;padding:10px 8px}' +
     '#zop .zop-h small{display:block;font-weight:600;font-size:13px;opacity:.95;margin-top:2px}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
-    '#zop a{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
+    '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
+    '#zop .zop-k a{display:flex;flex:1;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff}' +
     '#zop .zop-n{font-size:12px;font-weight:700;line-height:1.3;padding:6px 6px 0;min-height:32px;text-align:center}' +
     '#zop .zop-p{text-align:center;padding:4px 4px 8px}' +
     '#zop .zop-p b{color:#f97316;font-size:17px;font-weight:900}' +
     '#zop .zop-p s{color:#999;font-size:11px;margin-inline-start:4px}' +
-    '#zop .zop-c{display:block;margin:0 6px 8px;background:#f97316;color:#fff;font-size:12px;font-weight:800;text-align:center;border-radius:8px;padding:6px 0}' +
+    '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
+    '#zop .zop-c.zop-ok{background:#16a34a}' +
+    '#zop #zop-go{display:none;text-align:center;color:#f97316;font-weight:800;font-size:14px;padding:0 0 12px;text-decoration:underline}' +
     '@media(min-width:768px){#zop .zop-n{font-size:15px}#zop .zop-p b{font-size:22px}#zop .zop-g{gap:16px;padding:16px}}';
 
   var products = null, loading = false;
@@ -45,12 +48,58 @@
 
   function card(p) {
     var price = p.sale_price || p.price;
-    return '<a href="/products/' + p.slug + '">' +
+    return '<div class="zop-k"><a href="/products/' + p.slug + '">' +
       '<img src="' + p.thumb + '" alt="" loading="eager">' +
       '<div class="zop-n">' + p.name + '</div>' +
-      '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div>' +
-      '<span class="zop-c">اطلب البرفيوم</span></a>';
+      '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div></a>' +
+      (added[p.id]
+        ? '<button type="button" class="zop-c zop-ok" data-id="' + p.id + '">✓ اتضاف للسلة</button></div>'
+        : '<button type="button" class="zop-c" data-id="' + p.id + '">أضف للسلة</button></div>');
   }
+
+  // The theme re-renders the grid after a cart change, which rebuilds the box; keep what was added.
+  var added = {};
+
+  function guestId() {
+    try { return JSON.parse(localStorage.getItem('guest-id')).state.guestId; } catch (e) { return null; }
+  }
+
+  // Same call the theme's own "add to cart" makes; the cart page reads it from the server.
+  function addToCart(btn) {
+    var gid = guestId();
+    if (!gid) { location.href = btn.parentNode.querySelector('a').getAttribute('href'); return; }
+    btn.disabled = true;
+    btn.textContent = '...';
+    fetch('https://api.easy-orders.net/api/v1/cart-items/guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: btn.getAttribute('data-id'), quantity: 1, guest_id: gid })
+    }).then(function (r) {
+      if (!r.ok) throw 0;
+      added[btn.getAttribute('data-id')] = 1;
+      btn.textContent = '✓ اتضاف للسلة';
+      btn.className = 'zop-c zop-ok';
+      var go = document.getElementById('zop-go');
+      if (go) go.style.display = 'block';
+    }).catch(function () {
+      btn.textContent = 'أضف للسلة';
+    }).then(function () {
+      setTimeout(function () { btn.disabled = false; }, 600);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('#zop .zop-c');
+    if (btn) { e.preventDefault(); addToCart(btn); return; }
+    // A full load of /cart 404s on this theme, so open it through the header cart button.
+    if (e.target.closest && e.target.closest('#zop-go')) {
+      e.preventDefault();
+      var cart = [].filter.call(document.querySelectorAll('header button, button'), function (b) {
+        return /items in cart/i.test(b.textContent);
+      })[0];
+      if (cart) cart.click(); else location.href = '/';
+    }
+  });
 
   function tick() {
     var box = document.getElementById('zop');
@@ -69,8 +118,9 @@
     }
     box = document.createElement('div');
     box.id = 'zop';
-    box.innerHTML = '<div class="zop-h">🎬 البرفيومات اللي في الفيديو<small>اشتري 2 والتالتة هدية 🎁</small></div>' +
-      '<div class="zop-g">' + products.map(card).join('') + '</div>';
+    box.innerHTML = '<div class="zop-h">🎬 الأنواع اللي في الفيديو<small>اشتري 2 والتالتة هدية 🎁</small></div>' +
+      '<div class="zop-g">' + products.map(card).join('') + '</div>' +
+      '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>';
     grid.parentNode.insertBefore(box, grid);
   }
 
