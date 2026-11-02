@@ -101,6 +101,8 @@
       btn.className = 'zop-c zop-ok';
       var go = document.getElementById('zop-go');
       if (go) go.style.display = 'block';
+      // Like the theme's own button: open the side cart once the refreshed items are in.
+      setTimeout(openCart, 700);
     }).catch(function () {
       btn.textContent = 'أضف للسلة';
     }).then(function () {
@@ -111,15 +113,16 @@
   document.addEventListener('click', function (e) {
     var btn = e.target.closest && e.target.closest('#zop .zop-c');
     if (btn) { e.preventDefault(); addToCart(btn); return; }
-    // A full load of /cart 404s on this theme, so open it through the header cart button.
-    if (e.target.closest && e.target.closest('#zop-go')) {
-      e.preventDefault();
-      var cart = [].filter.call(document.querySelectorAll('header button, button'), function (b) {
-        return /items in cart/i.test(b.textContent);
-      })[0];
-      if (cart) cart.click(); else location.href = '/';
-    }
+    if (e.target.closest && e.target.closest('#zop-go')) { e.preventDefault(); openCart(); }
   });
+
+  // A full load of /cart 404s on this theme, so open it through the header cart button.
+  function openCart() {
+    var cart = [].filter.call(document.querySelectorAll('header button, button'), function (b) {
+      return /items in cart/i.test(b.textContent);
+    })[0];
+    if (cart) cart.click(); else location.href = '/';
+  }
 
   function tick() {
     var box = document.getElementById('zop');
