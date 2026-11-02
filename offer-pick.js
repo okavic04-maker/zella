@@ -4,7 +4,7 @@
   var CAT = 'eed6365c-4905-402f-8821-db78741bd33f';
   var KEY = 'zella_offer_pick';
   // Ad video shown at the top of the box; leave empty to hide it. Upload the mp4 to the repo and put its jsDelivr URL here.
-  var VIDEO = '';
+  var VIDEO = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@883cf02a2a/offer-video.mp4.mp4';
   // The deadline line disappears once this passes (Cairo time).
   var END = new Date('2026-12-01T00:00:00+02:00');
   var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
@@ -32,7 +32,8 @@
     '#zop .zop-h{background:#14b8a6;color:#fff;font-weight:800;font-size:17px;text-align:center;padding:10px 8px}' +
     '#zop .zop-h small{display:block;font-weight:600;font-size:13px;opacity:.95;margin-top:2px}' +
     '#zop .zop-end{background:#f97316;color:#fff;font-weight:800;font-size:13px;text-align:center;padding:5px 8px}' +
-    '#zop video{display:block;width:100%;max-height:420px;background:#000;object-fit:contain}' +
+    // Square crop of the vertical ad video: no black bars, and the cards still fit on the first phone screen.
+    '#zop video{display:block;width:100%;max-width:460px;margin:0 auto;aspect-ratio:1/1;height:auto;object-fit:cover;object-position:center 25%}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
     '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop .zop-k a{display:flex;flex:1;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
