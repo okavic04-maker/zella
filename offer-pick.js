@@ -66,8 +66,11 @@
     '#zop .zop-save{margin:0 10px 10px;background:#fff;border:2px dashed #14b8a6;border-radius:10px;text-align:center;padding:8px 6px;font-size:14px;font-weight:800;color:#111;line-height:1.6}' +
     '#zop .zop-save{background:#fff7ed;border-color:#f97316;font-size:16px}' +
     '#zop .zop-save em{display:block;font-style:normal;color:#14b8a6;font-size:13px}' +
-    '#zop .zop-save b{color:#f97316;font-size:30px;font-weight:900}#zop .zop-save s{color:#999;font-size:15px;margin-inline-start:4px}' +
-    '#zop .zop-save i{display:block;font-style:normal;color:#16a34a;font-size:12.5px;margin-top:2px}' +
+    '#zop .zop-save .zs-l{display:block;font-size:15px}' +
+    '#zop .zop-save .zs-p{display:flex;justify-content:center;align-items:baseline;gap:8px;line-height:1.2}' +
+    '#zop .zop-save b{color:#f97316;font-size:34px;font-weight:900}#zop .zop-save s{color:#999;font-size:16px}' +
+    '#zop .zop-save .zs-c{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}' +
+    '#zop .zop-save .zs-c u{text-decoration:none;background:#dcfce7;color:#15803d;font-size:12.5px;border-radius:20px;padding:2px 10px}' +
     '#zop .zop-rh{font-weight:900;font-size:16px;text-align:center;padding:4px 8px 8px;color:#111}' +
     '#zop .zop-r{display:flex;gap:8px;overflow-x:auto;padding:0 10px 12px;scroll-snap-type:x mandatory}' +
     '#zop .zop-r img{cursor:pointer;flex:none;width:44%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;scroll-snap-align:start;border:2px solid #14b8a6;background:#000}' +
@@ -296,9 +299,11 @@
     var ps = products.map(price);
     var sum = ps.reduce(function (a, b) { return a + b; }, 0), free = Math.min.apply(null, ps);
     // Lead with the price per piece when taking all three, next to the highest single price.
+    // One idea per line so it stays tidy on narrow phones.
     return '<div class="zop-save"><em>لما تاخد التلاتة 👇</em>' +
-      'كل برفيوم يطلع عليك بـ <b>' + Math.round((sum - free) / 3) + ' ج.م</b> بس <s>بدل ' + Math.max.apply(null, ps) + '</s>' +
-      '<i>التلاتة بـ ' + (sum - free) + ' بدل ' + sum + ' • وفّرت ' + free + ' ج.م + شحن مجاني 🚚</i></div>';
+      '<span class="zs-l">كل برفيوم يطلع عليك بـ</span>' +
+      '<span class="zs-p"><b>' + Math.round((sum - free) / 3) + ' ج.م</b><s>بدل ' + Math.max.apply(null, ps) + '</s></span>' +
+      '<span class="zs-c"><u>التلاتة بـ ' + (sum - free) + ' بدل ' + sum + '</u><u>وفّرت ' + free + ' ج.م + شحن مجاني 🚚</u></span></div>';
   }
 
   // Sticky progress bar for ad visitors: how many pieces until the free one. Hidden while the side cart is open.
