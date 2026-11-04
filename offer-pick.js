@@ -38,7 +38,7 @@
     '#zop .zop-h small{display:block;font-weight:600;font-size:13px;opacity:.95;margin-top:2px}' +
     '#zop .zop-end{background:#f97316;color:#fff;font-weight:800;font-size:13px;text-align:center;padding:5px 8px}' +
     // The whole vertical ad video in the middle, with a blurred copy of it filling the sides instead of black bars.
-    '#zop .zop-v{position:relative;height:400px;overflow:hidden;background:#111}' +
+    '#zop .zop-v{position:relative;height:230px;overflow:hidden;background:#111}' +
     '#zop .zop-v video{position:relative;display:block;height:100%;width:auto;max-width:100%;margin:0 auto;object-fit:contain}' +
     '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
