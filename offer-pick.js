@@ -64,11 +64,13 @@
     '#zop .zop-best{position:absolute;top:6px;inset-inline-start:6px;z-index:1;background:#f97316;color:#fff;font-size:11px;font-weight:900;border-radius:20px;padding:3px 8px;box-shadow:0 2px 6px rgba(249,115,22,.4)}' +
     '#zop .zop-k.zop-isbest{outline:2px solid #f97316}' +
     '#zop .zop-save{margin:0 10px 10px;background:#fff;border:2px dashed #14b8a6;border-radius:10px;text-align:center;padding:8px 6px;font-size:14px;font-weight:800;color:#111;line-height:1.6}' +
-    '#zop .zop-save b{color:#f97316;font-size:20px;font-weight:900}#zop .zop-save s{color:#999;font-size:13px}' +
-    '#zop .zop-save i{display:block;font-style:normal;color:#16a34a;font-size:15px}' +
+    '#zop .zop-save{background:#fff7ed;border-color:#f97316;font-size:16px}' +
+    '#zop .zop-save em{display:block;font-style:normal;color:#14b8a6;font-size:13px}' +
+    '#zop .zop-save b{color:#f97316;font-size:30px;font-weight:900}#zop .zop-save s{color:#999;font-size:15px;margin-inline-start:4px}' +
+    '#zop .zop-save i{display:block;font-style:normal;color:#16a34a;font-size:12.5px;margin-top:2px}' +
     '#zop .zop-rh{font-weight:900;font-size:16px;text-align:center;padding:4px 8px 8px;color:#111}' +
     '#zop .zop-r{display:flex;gap:8px;overflow-x:auto;padding:0 10px 12px;scroll-snap-type:x mandatory}' +
-    '#zop .zop-r img{flex:none;width:44%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;scroll-snap-align:start;border:2px solid #14b8a6;background:#000}' +
+    '#zop .zop-r img{cursor:pointer;flex:none;width:44%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;scroll-snap-align:start;border:2px solid #14b8a6;background:#000}' +
     '#zop-bar{position:fixed;left:10px;right:10px;z-index:40;background:#fff;border:2px solid #14b8a6;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px 10px;display:flex;align-items:center;gap:10px;font-family:inherit;direction:rtl}' +
     '#zop-bar .zb-d{display:flex;gap:4px;flex:none}#zop-bar .zb-d span{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:14px}' +
     '#zop-bar .zb-d span.on{background:#14b8a6;color:#fff}#zop-bar .zb-d span.gift{background:#fff7ed;border:2px dashed #f97316}#zop-bar .zb-d span.gift.on{background:#f97316;border-color:#f97316}' +
@@ -206,9 +208,45 @@
       post(cs.getAttribute('data-id')).then(refreshCart).catch(function () { cs.disabled = false; cs.textContent = 'أضف'; });
       return;
     }
+    var rv = e.target.closest('#zop .zop-r img');
+    if (rv) { e.preventDefault(); showReview(+rv.getAttribute('data-i')); return; }
+    if (view && view.contains(e.target)) {
+      e.preventDefault();
+      var i = +view.getAttribute('data-i'), ar = e.target.closest('.zrv-a');
+      if (ar) return showReview(ar.classList.contains('r') ? i + 1 : i - 1);
+      if (e.target.closest('.zrv-close') || e.target.tagName !== 'IMG') return closeReview();
+      return showReview(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+    }
     if (e.target.closest('#zop-bar button')) { e.preventDefault(); openCart(); return; }
     if (e.target.closest('#zop-go')) { e.preventDefault(); openCart(); }
   });
+
+  // Review viewer: same look and swipe as the homepage reviews (bogo.js styles .zrv-view, swipe.js presses .zrv-a).
+  var view = null;
+  function closeReview() {
+    if (!view) return;
+    clearTimeout(view.t); view.remove(); view = null;
+    document.body.style.overflow = '';
+  }
+  function showReview(i) {
+    if (i < 0) i = 0;
+    if (i >= REVIEWS.length) return closeReview();
+    if (!view) {
+      view = document.createElement('div');
+      view.className = 'zrv-view';
+      document.body.appendChild(view);
+      document.body.style.overflow = 'hidden';
+    }
+    clearTimeout(view.t);
+    view.setAttribute('data-i', i);
+    view.innerHTML = '<div class="zrv-bars">' + REVIEWS.map(function (f, j) { return '<i><b style="width:' + (j < i ? 100 : 0) + '%"></b></i>'; }).join('') + '</div>' +
+      '<div class="zrv-head">⭐ آراء عملاءنا</div><button type="button" class="zrv-close" aria-label="Close">×</button><b class="zrv-a">‹</b><b class="zrv-a r">›</b>' +
+      '<img src="' + REV_BASE + REVIEWS[i] + '" alt="">';
+    var bar = view.querySelectorAll('.zrv-bars b')[i];
+    void bar.offsetWidth;
+    bar.style.transition = 'width 5s linear'; bar.style.width = '100%';
+    view.t = setTimeout(function () { showReview(i + 1); }, 5000);
+  }
 
   // A full load of /cart 404s on this theme, so open it through the header cart button.
   function openCart() {
@@ -257,15 +295,17 @@
     if (products.length < 3) return '';
     var ps = products.map(price);
     var sum = ps.reduce(function (a, b) { return a + b; }, 0), free = Math.min.apply(null, ps);
-    return '<div class="zop-save">التلاتة بـ <b>' + (sum - free) + ' ج.م</b> بدل <s>' + sum + ' ج.م</s>' +
-      '<i>🎉 وفّرت ' + free + ' ج.م + الشحن مجاني</i></div>';
+    // Lead with the price per piece when taking all three, next to the highest single price.
+    return '<div class="zop-save"><em>لما تاخد التلاتة 👇</em>' +
+      'كل برفيوم يطلع عليك بـ <b>' + Math.round((sum - free) / 3) + ' ج.م</b> بس <s>بدل ' + Math.max.apply(null, ps) + '</s>' +
+      '<i>التلاتة بـ ' + (sum - free) + ' بدل ' + sum + ' • وفّرت ' + free + ' ج.م + شحن مجاني 🚚</i></div>';
   }
 
   // Sticky progress bar for ad visitors: how many pieces until the free one. Hidden while the side cart is open.
   function barTick() {
     var bar = document.getElementById('zop-bar');
     var cartOpen = document.getElementById('zella-bogo-bar');
-    var show = fromAd() && products && !cartOpen && !/^\/(checkout|thank)/.test(location.pathname);
+    var show = fromAd() && products && !cartOpen && !document.querySelector('.zrv-view, .zub-view') && !/^\/(checkout|thank)/.test(location.pathname);
     if (!show) { if (bar) bar.remove(); return; }
     // The server can keep two rows for one product; the theme shows them as one line, so count each product once.
     var q = {};
@@ -343,7 +383,7 @@
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST + '</div>' +
       (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي</div><div class="zop-r">' +
-        REVIEWS.map(function (f) { return '<img src="' + REV_BASE + f + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
+        REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
   }
