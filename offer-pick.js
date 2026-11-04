@@ -8,7 +8,7 @@
   // The deadline line disappears once this passes (Cairo time).
   var END = new Date('2026-12-01T00:00:00+02:00');
   var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
-  var TRUST = '💵 الدفع عند الاستلام • 🔄 استبدال واسترجاع مضمون • 🚚 توصيل خلال 2-3 أيام عمل';
+  var TRUST = [['💵', 'الدفع عند<br>الاستلام'], ['🔄', 'استبدال واسترجاع<br>مضمون'], ['🚚', 'توصيل خلال<br>2-3 أيام عمل']];
   // Card that gets the "best seller" badge.
   var BEST = 'borninroma';
   // Customer review screenshots about the video perfumes (files in the repo's reviews/ folder).
@@ -54,7 +54,9 @@
     '#zop .zop-all{display:block;width:calc(100% - 20px);margin:0 10px 10px;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-all.zop-ok{background:#16a34a}' +
     '#zop #zop-go{display:none;text-align:center;color:#f97316;font-weight:800;font-size:14px;padding:0 0 10px;text-decoration:underline}' +
-    '#zop .zop-t{text-align:center;color:#475569;font-size:11.5px;line-height:1.6;padding:0 8px 10px}' +
+    '#zop .zop-t{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 10px 12px}' +
+    '#zop .zop-t span{background:#fff;border:1px solid #ccfbf1;border-radius:10px;padding:7px 4px;text-align:center;color:#0f766e;font-size:11.5px;font-weight:700;line-height:1.35}' +
+    '#zop .zop-t i{display:block;font-style:normal;font-size:20px;margin-bottom:2px}' +
     '#zop.zop-pp{margin:18px 0 0}#zop.zop-pp .zop-g{grid-template-columns:repeat(2,1fr)}' +
     '#zop-cs{margin:12px 0;border:2px dashed #f97316;border-radius:12px;background:#fff7ed;padding:10px;display:flex;gap:10px;align-items:center}' +
     '#zop-cs img{width:58px;height:58px;object-fit:contain;border-radius:8px;background:#fff;flex:none}' +
@@ -112,7 +114,7 @@
   }
 
   // The theme re-renders the grid after a cart change, which rebuilds the box; keep what was added.
-  var added = {};
+  var added = {}, lastPost = 0;
 
   function guestId() {
     try { return JSON.parse(localStorage.getItem('guest-id')).state.guestId; } catch (e) { return null; }
@@ -134,6 +136,26 @@
     var c = queryClient();
     if (c) c.invalidateQueries({ queryKey: ['cart-items'] });
   }
+  // The theme removes / changes cart lines with a PATCH and doesn't refetch the cart list,
+  // so refetch after any cart change to keep the progress bar right away.
+  function cartChanged(method, url) {
+    if (!fromAd() || !/cart-items/.test(url) || /^get$/i.test(method || 'GET')) return;
+    setTimeout(function () { refreshCart(); setTimeout(tick, 600); }, 150);
+  }
+  try {
+    var xo = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (m, u) {
+      this.addEventListener('loadend', function () { cartChanged(m, String(u)); });
+      return xo.apply(this, arguments);
+    };
+    var fo = window.fetch;
+    window.fetch = function (u, o) {
+      var p = fo.apply(this, arguments);
+      p.then(function () { cartChanged(o && o.method, String(u && u.url || u)); }, function () {});
+      return p;
+    };
+  } catch (e) {}
+
   function cartItems() {
     var c = queryClient();
     var d = c && c.getQueryData(['cart-items']);
@@ -149,6 +171,7 @@
     }).then(function (r) {
       if (!r.ok) throw 0;
       added[id] = 1;
+      lastPost = Date.now();
     });
   }
 
@@ -344,8 +367,35 @@
     bar.style.bottom = (innerHeight - top + 8) + 'px';
   }
 
+  // Keep "✓ اتضاف للسلة" in step with the real cart (a line removed in the side cart turns back to "أضف للسلة").
+  function syncAdded() {
+    var c = queryClient(), d = c && c.getQueryData(['cart-items']);
+    // Right after our own add the cart list is still the old one; wait for the refetch.
+    if (!Array.isArray(d) || !products || Date.now() - lastPost < 2500) return;
+    var inCart = {};
+    d.forEach(function (it) { inCart[it.product_id] = 1; });
+    products.forEach(function (p) { if (inCart[p.id]) added[p.id] = 1; else delete added[p.id]; });
+    [].forEach.call(document.querySelectorAll('#zop .zop-c'), function (b) {
+      if (b.disabled) return;
+      var on = !!added[b.getAttribute('data-id')];
+      if (on !== (b.className.indexOf('zop-ok') > -1)) {
+        b.className = on ? 'zop-c zop-ok' : 'zop-c';
+        b.textContent = on ? '✓ اتضاف للسلة' : 'أضف للسلة';
+      }
+    });
+    var all = document.querySelector('#zop .zop-all');
+    if (all && !all.textContent.match(/^\.\.\./)) {
+      var every = products.every(function (p) { return added[p.id]; });
+      if (every !== all.disabled) {
+        all.disabled = every;
+        all.className = 'zop-all' + (every ? ' zop-ok' : '');
+        all.textContent = every ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة';
+      }
+    }
+  }
+
   function tick() {
-    if (fromAd()) { ensureCss(); barTick(); }
+    if (fromAd()) { ensureCss(); barTick(); syncAdded(); }
     var box = document.getElementById('zop');
     var slug = pageSlug();
     if (fromAd()) { load(); cartTick(); }
@@ -386,7 +436,7 @@
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
         (allAdded ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة') + '</button>') +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
-      '<div class="zop-t">' + TRUST + '</div>' +
+      '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
       (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي</div><div class="zop-r">' +
         REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
