@@ -9,6 +9,11 @@
   var END = new Date('2026-12-01T00:00:00+02:00');
   var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
   var TRUST = '💵 الدفع عند الاستلام • 🔄 استبدال واسترجاع مضمون • 🚚 توصيل خلال 2-3 أيام عمل';
+  // Card that gets the "best seller" badge.
+  var BEST = 'borninroma';
+  // Customer review screenshots about the video perfumes (files in the repo's reviews/ folder).
+  var REV_BASE = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@5dbe4acdd43f0bd162f8e026635b31c312b41639/reviews/';
+  var REVIEWS = ['r1.jpg', 'r2.jpg', 'r3.jpg', 'r4.jpg', 'r5.jpg'];
 
   function isMen() { return /^\/collections\/men\/?$/.test(location.pathname); }
   try {
@@ -55,6 +60,21 @@
     '#zop-cs img{width:58px;height:58px;object-fit:contain;border-radius:8px;background:#fff;flex:none}' +
     '#zop-cs div{flex:1;font-size:13px;font-weight:700;line-height:1.4;color:#111}' +
     '#zop-cs button{flex:none;background:#f97316;color:#fff;border:0;border-radius:8px;padding:8px 10px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}' +
+    '#zop .zop-k{position:relative}' +
+    '#zop .zop-best{position:absolute;top:6px;inset-inline-start:6px;z-index:1;background:#f97316;color:#fff;font-size:11px;font-weight:900;border-radius:20px;padding:3px 8px;box-shadow:0 2px 6px rgba(249,115,22,.4)}' +
+    '#zop .zop-k.zop-isbest{outline:2px solid #f97316}' +
+    '#zop .zop-save{margin:0 10px 10px;background:#fff;border:2px dashed #14b8a6;border-radius:10px;text-align:center;padding:8px 6px;font-size:14px;font-weight:800;color:#111;line-height:1.6}' +
+    '#zop .zop-save b{color:#f97316;font-size:20px;font-weight:900}#zop .zop-save s{color:#999;font-size:13px}' +
+    '#zop .zop-save i{display:block;font-style:normal;color:#16a34a;font-size:15px}' +
+    '#zop .zop-rh{font-weight:900;font-size:16px;text-align:center;padding:4px 8px 8px;color:#111}' +
+    '#zop .zop-r{display:flex;gap:8px;overflow-x:auto;padding:0 10px 12px;scroll-snap-type:x mandatory}' +
+    '#zop .zop-r img{flex:none;width:44%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;scroll-snap-align:start;border:2px solid #14b8a6;background:#000}' +
+    '#zop-bar{position:fixed;left:10px;right:10px;z-index:40;background:#fff;border:2px solid #14b8a6;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px 10px;display:flex;align-items:center;gap:10px;font-family:inherit;direction:rtl}' +
+    '#zop-bar .zb-d{display:flex;gap:4px;flex:none}#zop-bar .zb-d span{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:14px}' +
+    '#zop-bar .zb-d span.on{background:#14b8a6;color:#fff}#zop-bar .zb-d span.gift{background:#fff7ed;border:2px dashed #f97316}#zop-bar .zb-d span.gift.on{background:#f97316;border-color:#f97316}' +
+    '#zop-bar .zb-t{flex:1;font-size:13px;font-weight:800;line-height:1.35;color:#111}#zop-bar .zb-t small{display:block;color:#f97316;font-size:12px}' +
+    '#zop-bar button{flex:none;background:#f97316;color:#fff;border:0;border-radius:9px;padding:8px 10px;font-weight:900;font-size:12px;font-family:inherit}' +
+    '@media(min-width:768px){#zop-bar{left:auto;right:20px;width:380px}#zop .zop-r img{width:22%}}' +
     '@media(min-width:768px){#zop .zop-n{font-size:15px}#zop .zop-p b{font-size:22px}#zop .zop-g{gap:16px;padding:16px}}';
 
   var products = null, loading = false;
@@ -75,7 +95,9 @@
 
   function card(p) {
     var price = p.sale_price || p.price;
-    return '<div class="zop-k"><a href="/products/' + p.slug + '">' +
+    var best = p.slug === BEST;
+    return '<div class="zop-k' + (best ? ' zop-isbest' : '') + '">' + (best ? '<span class="zop-best">الأكثر طلباً 🔥</span>' : '') +
+      '<a href="/products/' + p.slug + '">' +
       '<img src="' + p.thumb + '" alt="" loading="eager">' +
       '<div class="zop-n">' + p.name + '</div>' +
       '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div></a>' +
@@ -184,6 +206,7 @@
       post(cs.getAttribute('data-id')).then(refreshCart).catch(function () { cs.disabled = false; cs.textContent = 'أضف'; });
       return;
     }
+    if (e.target.closest('#zop-bar button')) { e.preventDefault(); openCart(); return; }
     if (e.target.closest('#zop-go')) { e.preventDefault(); openCart(); }
   });
 
@@ -227,7 +250,57 @@
     bar.parentNode.insertBefore(cs, bar.nextSibling);
   }
 
+  function price(p) { return +(p.sale_price || p.price) || 0; }
+
+  // The three together: the cheapest one is the free one.
+  function saving() {
+    if (products.length < 3) return '';
+    var ps = products.map(price);
+    var sum = ps.reduce(function (a, b) { return a + b; }, 0), free = Math.min.apply(null, ps);
+    return '<div class="zop-save">التلاتة بـ <b>' + (sum - free) + ' ج.م</b> بدل <s>' + sum + ' ج.م</s>' +
+      '<i>🎉 وفّرت ' + free + ' ج.م + الشحن مجاني</i></div>';
+  }
+
+  // Sticky progress bar for ad visitors: how many pieces until the free one. Hidden while the side cart is open.
+  function barTick() {
+    var bar = document.getElementById('zop-bar');
+    var cartOpen = document.getElementById('zella-bogo-bar');
+    var show = fromAd() && products && !cartOpen && !/^\/(checkout|thank)/.test(location.pathname);
+    if (!show) { if (bar) bar.remove(); return; }
+    // The server can keep two rows for one product; the theme shows them as one line, so count each product once.
+    var q = {};
+    cartItems().forEach(function (it) { q[it.product_id] = Math.max(q[it.product_id] || 0, +it.quantity || 0); });
+    var pieces = Object.keys(q).reduce(function (n, k) { return n + q[k]; }, 0);
+    var n = pieces % 3, sets = Math.floor(pieces / 3);
+    var dots = [1, 2, 3].map(function (i) {
+      return '<span class="' + (i === 3 ? 'gift' : '') + (i <= n || (n === 0 && sets) ? ' on' : '') + '">' + (i === 3 ? '🎁' : (i <= n || (n === 0 && sets) ? '✓' : '')) + '</span>';
+    }).join('');
+    var text = n === 0 && sets ? 'مبروك! التالتة عليك هدية 🎁<small>كمّل الطلب أو ضيف 2 كمان وخد هدية تانية</small>'
+      : n === 0 ? 'اختار 2 برفيوم والتالتة هدية 🎁<small>والشحن مجاني 🚚</small>'
+      : n === 1 ? 'ضفت 1 – ضيف 1 كمان<small>وبعدها التالتة عليك هدية 🎁</small>'
+      : 'فاضل خطوة! ضيف التالتة ببلاش 🎁<small>البرفيوم التالت هدية مننا</small>';
+    var key = pieces + '';
+    if (bar && bar.getAttribute('data-k') === key) { place(bar); return; }
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'zop-bar';
+      document.body.appendChild(bar);
+    }
+    bar.setAttribute('data-k', key);
+    bar.innerHTML = '<div class="zb-d">' + dots + '</div><div class="zb-t">' + text + '</div>' +
+      (pieces ? '<button type="button">السلة 🛒</button>' : '');
+    place(bar);
+  }
+  // Sit just above the theme's bottom nav.
+  function place(bar) {
+    var nav = document.querySelector('section.fixed.inset-x-5');
+    var top = nav ? nav.getBoundingClientRect().top : innerHeight;
+    if (top <= 0 || top > innerHeight) top = innerHeight;
+    bar.style.bottom = (innerHeight - top + 8) + 'px';
+  }
+
   function tick() {
+    if (fromAd()) { ensureCss(); barTick(); }
     var box = document.getElementById('zop');
     var slug = pageSlug();
     if (fromAd()) { load(); cartTick(); }
@@ -264,10 +337,13 @@
         '<video class="zop-vb" src="' + VIDEO + '" autoplay muted loop playsinline aria-hidden="true"></video>' +
         '<video src="' + VIDEO + '" autoplay muted loop playsinline></video></div>' : '') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
+      (slug ? '' : saving()) +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
         (allAdded ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة') + '</button>') +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
-      '<div class="zop-t">' + TRUST + '</div>';
+      '<div class="zop-t">' + TRUST + '</div>' +
+      (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي</div><div class="zop-r">' +
+        REVIEWS.map(function (f) { return '<img src="' + REV_BASE + f + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
   }
