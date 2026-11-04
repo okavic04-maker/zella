@@ -4,7 +4,9 @@
   var CAT = 'eed6365c-4905-402f-8821-db78741bd33f';
   var KEY = 'zella_offer_pick';
   // Ad video shown at the top of the box; leave empty to hide it. Upload the mp4 to the repo and put its jsDelivr URL here.
-  var VIDEO = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@883cf02a2a/offer-video.mp4.mp4';
+  var VIDEO = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/offer-video-light.mp4';
+  // Still frame shown at once while the video loads; a blurred copy of it fills the sides (one video download, not two).
+  var POSTER = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/offer-poster.jpg';
   // The deadline line disappears once this passes (Cairo time).
   var END = new Date('2026-12-01T00:00:00+02:00');
   var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
@@ -40,7 +42,7 @@
     // The whole vertical ad video in the middle, with a blurred copy of it filling the sides instead of black bars.
     '#zop .zop-v{position:relative;height:230px;overflow:hidden;background:#111}' +
     '#zop .zop-v video{position:relative;display:block;height:100%;width:auto;max-width:100%;margin:0 auto;object-fit:contain}' +
-    '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
+    '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
     '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop .zop-k a{display:flex;flex:1;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
@@ -429,8 +431,8 @@
     box.innerHTML = '<div class="zop-h">' + title + '<small>اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚</small></div>' +
       (new Date() < END ? '<div class="zop-end">' + END_TEXT + '</div>' : '') +
       (VIDEO && !slug ? '<div class="zop-v">' +
-        '<video class="zop-vb" src="' + VIDEO + '" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>' +
-        '<video src="' + VIDEO + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
+        '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
+        '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : saving()) +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
@@ -438,7 +440,7 @@
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
       (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي</div><div class="zop-r">' +
-        REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
+        REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" decoding="async">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
     startVideo(box);
