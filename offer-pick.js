@@ -429,8 +429,8 @@
     box.innerHTML = '<div class="zop-h">' + title + '<small>اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚</small></div>' +
       (new Date() < END ? '<div class="zop-end">' + END_TEXT + '</div>' : '') +
       (VIDEO && !slug ? '<div class="zop-v">' +
-        '<video class="zop-vb" src="' + VIDEO + '" autoplay muted loop playsinline aria-hidden="true"></video>' +
-        '<video src="' + VIDEO + '" autoplay muted loop playsinline></video></div>' : '') +
+        '<video class="zop-vb" src="' + VIDEO + '" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true"></video>' +
+        '<video src="' + VIDEO + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : saving()) +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
@@ -441,6 +441,36 @@
         REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" loading="lazy">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
+    startVideo(box);
+  }
+
+  // iPhone: autoplay from innerHTML is not reliable (the muted flag, Low Power Mode, Facebook/Instagram browser).
+  // Set the flags as properties, call play(), and if iOS still refuses, play on the first touch and show a play button.
+  function startVideo(box) {
+    var vs = box.querySelectorAll('.zop-v video');
+    if (!vs.length) return;
+    var btn;
+    function playAll() {
+      var p = [].map.call(vs, function (v) {
+        v.muted = true; v.defaultMuted = true; v.playsInline = true;
+        v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+        var r = v.play();
+        return r && r.then ? r : Promise.resolve();
+      });
+      return Promise.all(p).then(function () { if (btn) { btn.remove(); btn = null; } });
+    }
+    playAll().catch(function () {
+      var wrap = box.querySelector('.zop-v');
+      if (!wrap || wrap.querySelector('.zop-play')) return;
+      btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'zop-play'; btn.setAttribute('aria-label', 'شغّل الفيديو');
+      btn.innerHTML = '▶';
+      btn.style.cssText = 'position:absolute;left:50%;top:50%;z-index:3;width:64px;height:64px;margin:-32px 0 0 -32px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:28px;line-height:64px;padding-left:5px;cursor:pointer';
+      btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); playAll().catch(function () {}); });
+      wrap.appendChild(btn);
+      var once = function () { document.removeEventListener('touchstart', once, true); if (box.isConnected) playAll().catch(function () {}); };
+      document.addEventListener('touchstart', once, { capture: true, passive: true });
+    });
   }
 
   setInterval(tick, 700);
