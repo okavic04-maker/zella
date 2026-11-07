@@ -13,6 +13,8 @@
     },
     offer2: {
       slugs: ['angelshare', 'wanted1', 'you'], best: 'you', page: 'home', // link: zella-store.com/?v=offer2
+      hook: 'واحد للنهار، واحد للسهرة، وواحد للخروجة',
+      explain: [['للنهار ☀️', 'Stronger With You'], ['للسهرة 🌙', 'Angels’ Share'], ['للخروجة 😎', 'Most Wanted']],
       video: V2 + 'offer2-video-light.mp4', poster: V2 + 'offer2-poster.jpg',
       reviews: [R2 + 'r6.jpg', R2 + 'r7.jpg', R2 + 'r8.jpg', R1 + 'r4.jpg']
     }
@@ -34,8 +36,20 @@
   var VIDEO = O.video;
   var POSTER = O.poster;
   // The deadline line disappears once this passes (Cairo time).
-  var END = new Date('2026-12-01T00:00:00+02:00');
-  var END_TEXT = 'العرض ساري لحد 30 نوفمبر بس ⏳';
+  var END = new Date('2026-11-11T00:00:00+02:00'); // 3-day offer from 7 Nov 2026: ends at the end of 10 Nov (Cairo)
+  var END_TEXT = 'العرض بينتهي خلال ⏳';
+  // Real time left until END: days, hours, minutes, seconds boxes (updated every second while the box is on screen).
+  function timer() {
+    var t = Math.max(0, END - new Date()) / 1000 | 0;
+    var u = [[t / 86400 | 0, 'يوم'], [t / 3600 % 24 | 0, 'ساعة'], [t / 60 % 60 | 0, 'دقيقة'], [t % 60, 'ثانية']];
+    return u.map(function (x) { return '<span>' + (x[0] < 10 ? '0' : '') + x[0] + '<small>' + x[1] + '</small></span>'; }).join('');
+  }
+  setInterval(function () {
+    var el = document.querySelector('#zop .zop-end .zt');
+    if (!el) return;
+    if (new Date() >= END) { el.parentNode.remove(); return; }
+    el.innerHTML = timer();
+  }, 1000);
   // The homepage translator in bogo.js swaps the exact text 'أضف للسلة' to English; a zero-width joiner keeps ours Arabic.
   var ADD = 'أضف للسلة‌';
   var ALL_HTML = 'ضيف التلاتة للسلة بضغطة <i class="zop-cart">🛒</i>';
@@ -60,15 +74,21 @@
     return fromAd() ? m[1] : null;
   }
 
-  var css = '#zop{margin:0 0 18px;border-radius:16px;overflow:hidden;border:2px solid #14b8a6;background:#f0fdfa}' +
-    '#zop .zop-h{background:#14b8a6;color:#fff;font-weight:800;font-size:17px;text-align:center;padding:10px 8px}' +
-    '#zop .zop-h small{display:block;font-weight:600;font-size:13px;opacity:.95;margin-top:2px}' +
-    '#zop .zop-end{background:#f97316;color:#fff;font-weight:800;font-size:13px;text-align:center;padding:5px 8px}' +
+  var css = '#zop{margin:0 0 22px;border-radius:20px;overflow:hidden;border:1px solid #99f6e4;background:linear-gradient(#f0fdfa,#fff 60%);box-shadow:0 8px 24px rgba(20,184,166,.15)}' +
+    '#zop:not(.zop-pp){margin:10px 10px 22px}' +
+    '#zop .zop-h{background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;font-weight:800;font-size:18px;text-align:center;padding:14px 10px 12px;line-height:1.35}' +
+    '#zop .zop-h small{display:block;font-weight:600;font-size:13.5px;opacity:.95;margin-top:4px}' +
+    '#zop .zop-h .zop-x{display:flex;justify-content:center;flex-wrap:wrap;gap:5px;font-style:normal;margin:8px 0 2px}' +
+    '#zop .zop-h .zop-x span{background:rgba(255,255,255,.2);border-radius:20px;padding:3px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}' +
+    '#zop .zop-end{background:#fff7ed;color:#c2410c;font-weight:800;font-size:12.5px;text-align:center;padding:8px 8px 9px;border-bottom:1px solid #fed7aa}' +
+    '#zop .zop-end .zt{display:flex;justify-content:center;gap:6px;margin-top:5px;direction:ltr}' +
+    '#zop .zop-end .zt span{min-width:46px;background:#f97316;color:#fff;border-radius:8px;padding:3px 0 2px;font-size:17px;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}' +
+    '#zop .zop-end .zt small{display:block;font-size:10px;font-weight:700;opacity:.9}' +
     // The whole vertical ad video in the middle, with a blurred copy of it filling the sides instead of black bars.
     '#zop .zop-v{position:relative;height:230px;overflow:hidden;background:#111}' +
     '#zop .zop-v video{position:relative;display:block;height:100%;width:auto;max-width:100%;margin:0 auto;object-fit:contain}' +
     '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
-    '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}' +
+    '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:12px 10px}' +
     '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop .zop-k a{display:flex;flex:1;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;text-decoration:none;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
     '#zop img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff}' +
@@ -83,6 +103,8 @@
     '#zop .zop-save .zs-p b{display:inline-block;animation:zop-beat 1.6s ease-in-out infinite}' +
     '#zop .zop-save .zs-c u{display:inline-block;animation:zop-pulse 1.6s ease-in-out infinite .4s}' +
     '@keyframes zop-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}' +
+    // iPhone only sends taps on a plain area when it looks clickable: makes a tap on the blur above/below close the review.
+    '.zrv-view.zop-rview{cursor:pointer;-webkit-tap-highlight-color:transparent}' +
     // Bottom bar: the gift circle bounces and the frame glows, so it keeps catching the eye.
     '#zop-bar{animation:zop-glow 1.8s ease-in-out infinite}' +
     '#zop-bar .zb-d span.gift{animation:zop-gift 1.2s ease-in-out infinite}' +
@@ -91,7 +113,7 @@
     '@media (prefers-reduced-motion:reduce){#zop .zop-o,#zop .zop-save .zs-p b,#zop .zop-save .zs-c u,#zop .zop-all,#zop .zop-cart,#zop-bar,#zop-bar .zb-d span.gift{animation:none!important}}' +
     '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-c.zop-ok{background:#16a34a}' +
-    '#zop .zop-all{display:block;width:calc(100% - 20px);margin:10px 10px 0;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
+    '#zop .zop-all{display:block;width:calc(100% - 20px);margin:12px 10px 0;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-all.zop-ok{background:#16a34a}' +
     '#zop .zop-all:not(.zop-ok){animation:zop-pulse 1.6s ease-in-out infinite}' +
     '#zop .zop-cart{display:inline-block;font-style:normal;animation:zop-ride 1.6s ease-in-out infinite}' +
@@ -305,9 +327,10 @@
   function showReview(i) {
     if (i < 0) i = 0;
     if (i >= REVIEWS.length) return closeReview();
-    if (!view) {
+    if (!view || !view.isConnected) { // another script may have removed it (the homepage viewer uses the same class)
+      if (view) clearTimeout(view.t);
       view = document.createElement('div');
-      view.className = 'zrv-view';
+      view.className = 'zrv-view zop-rview';
       document.body.appendChild(view);
       document.body.style.overflow = 'hidden';
     }
@@ -369,6 +392,12 @@
     return Math.round(price(p) * (sum - Math.min.apply(null, ps)) / sum);
   }
   function slugPage() { return !!pageSlug(); }
+  // Box title = a hook with the real saving of this creative's 3 perfumes (the cheapest one is the free one).
+  function hook() {
+    if (O.hook) return O.hook;
+    if (!products || products.length < 3) return 'الأنواع اللي في الفيديو 🎬';
+    return 'خد التلاتة ووفّر ' + Math.min.apply(null, products.map(price)) + ' ج.م 🔥';
+  }
   function price(p) { return +(p.sale_price || p.price) || 0; }
 
   // The three together: the cheapest one is the free one.
@@ -473,7 +502,7 @@
       if (!anchor) return;
       if (box && box.nextElementSibling === anchor) return;
       list = products;
-      title = 'أكتر 3 أنواع طلباً الأسبوع 🔥';
+      title = hook();
     }
     if (box) box.remove();
     ensureCss();
@@ -481,8 +510,8 @@
     box = document.createElement('div');
     box.id = 'zop';
     if (slug) box.className = 'zop-pp';
-    box.innerHTML = '<div class="zop-h">' + title + '<small>' + SUB + '</small></div>' +
-      (new Date() < END ? '<div class="zop-end">' + END_TEXT + '</div>' : '') +
+    box.innerHTML = '<div class="zop-h">' + title + (O.explain && !slug ? '<em class="zop-x">' + O.explain.map(function (x) { return '<span><bdi>' + x[1] + '</bdi> ' + x[0] + '</span>'; }).join('') + '</em>' : '') + '<small>' + SUB + '</small></div>' +
+      (new Date() < END ? '<div class="zop-end">' + END_TEXT + '<div class="zt">' + timer() + '</div></div>' : '') +
       (VIDEO && !slug ? '<div class="zop-v">' +
         '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
         '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
