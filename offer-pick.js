@@ -306,7 +306,8 @@
       var vd = snd.parentNode.querySelector('video');
       var on = vd.muted;
       vd.muted = !on; vd.defaultMuted = !on;
-      if (on) { vd.currentTime = 0; var pr = vd.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      // Only the first time the sound goes on the video starts over; after that it just continues.
+      if (on) { if (!vd.dataset.heard) { vd.dataset.heard = '1'; vd.currentTime = 0; } var pr = vd.play(); if (pr && pr.catch) pr.catch(function () {}); }
       snd.className = 'zop-snd' + (on ? ' on' : '');
       snd.textContent = on ? 'اقفل الصوت 🔇' : 'شغل الصوت 🔊';
       return;
