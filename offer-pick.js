@@ -5,6 +5,10 @@
   var R2 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@ba565e2024d08a41596db1e93110a33d0ac703cb/reviews/';
   var V1 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/';
   var V2 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@0d464ef68e95a8a88ed558f9b19027fd206a2205/';
+  // New uploads come from statically.io: jsDelivr refuses new commits of this repo (over its 50 MB limit).
+  var V3 = 'https://cdn.statically.io/gh/okavic04-maker/zella@f3fe0fb307b1734aa32eb7737fcb39c33692d59d/';
+  // Videos go to the small public repo zella-media (statically.io refuses video files; jsDelivr is fine for a small repo).
+  var M3 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella-media@1a42516324fedf568bc4060ea5e439ba04d7cd07/';
   var OFFERS = {
     offer: {
       slugs: ['sauvagehigh', 'borninroma', 'intensely'], best: 'intensely', page: 'home', // link: zella-store.com/?v=offer (old /collections/men?v=offer links are sent to the homepage)
@@ -19,6 +23,14 @@
       explain: [['للنهار ☀️', 'Stronger With You'], ['للسهرة 🌙', 'Angels’ Share'], ['للخروجة 😎', 'Most Wanted']],
       video: V2 + 'offer2-video-light.mp4', poster: V2 + 'offer2-poster.jpg',
       reviews: [R2 + 'r6.jpg', R2 + 'r7.jpg', R2 + 'r8.jpg', R1 + 'r4.jpg']
+    },
+    offer3: {
+      slugs: ['ombre', 'orcblack', 'afgano'], best: 'orcblack', page: 'home', // link: zella-store.com/?v=offer3
+      hook: 'واحد للنهار، واحد للسهرة، واحد للخروجة',
+      explain: [['للنهار ☀️', 'Ombre Leather'], ['للسهرة 🌙', 'Black Orchid'], ['للخروجة 😎', 'Black Afgano']],
+      video: M3 + 'offer3-video-light.mp4', poster: M3 + 'offer3-poster.jpg', silent: true, // the ad video has no sound track
+      // No review names these three, so general store reviews with a general heading.
+      reviews: [V3 + 'r9.jpg', V3 + 'r10.jpg', V3 + 'r11.jpg'], revTitle: 'آراء عملاءنا ⭐'
     }
   };
   var CAT = 'eed6365c-4905-402f-8821-db78741bd33f';
@@ -533,7 +545,7 @@
       (VIDEO && !slug ? '<div class="zop-v">' +
         '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
         '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>' +
-        '<button type="button" class="zop-snd">شغل الصوت 🔊</button></div>' : '') +
+        (O.silent ? '' : '<button type="button" class="zop-snd">شغل الصوت 🔊</button>') + '</div>' : '') +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
         (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
@@ -541,7 +553,7 @@
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' + (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
-      (REVIEWS.length ? '<div class="zop-rh">آراء عملاءنا في الأنواع دي ⭐' + (seenReview() ? '' : '<small>دوس على أي ريفيو عشان تفتحه 👆</small>') + '</div><div class="zop-r">' +
+      (REVIEWS.length ? '<div class="zop-rh">' + (O.revTitle || 'آراء عملاءنا في الأنواع دي ⭐') + (seenReview() ? '' : '<small>دوس على أي ريفيو عشان تفتحه 👆</small>') + '</div><div class="zop-r">' +
         REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" decoding="async">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
