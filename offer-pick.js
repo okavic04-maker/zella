@@ -1,33 +1,58 @@
-/* Zella — offer picks: ?v=offer on /collections/men pins the ad-video perfumes on top */
+/* Zella — offer picks: ?v=offer / ?v=offer2 on /collections/men shows that ad creative's perfumes, video and reviews on top */
 (function () {
-  var SLUGS = ['sauvagehigh', 'borninroma', 'intensely'];
+  // One entry per ad creative; the link is /collections/men?v=<key>. Perfumes, video, badge and reviews per creative.
+  var R1 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@5dbe4acdd43f0bd162f8e026635b31c312b41639/reviews/';
+  var R2 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@ba565e2024d08a41596db1e93110a33d0ac703cb/reviews/';
+  var V1 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/';
+  var V2 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@0d464ef68e95a8a88ed558f9b19027fd206a2205/';
+  var OFFERS = {
+    offer: {
+      slugs: ['sauvagehigh', 'borninroma', 'intensely'], best: 'borninroma',
+      video: V1 + 'offer-video-light.mp4', poster: V1 + 'offer-poster.jpg',
+      reviews: [R1 + 'r1.jpg', R1 + 'r2.jpg', R1 + 'r3.jpg', R1 + 'r4.jpg', R1 + 'r5.jpg']
+    },
+    offer2: {
+      slugs: ['angelshare', 'wanted1', 'you'], best: 'you', page: 'home', // link: zella-store.com/?v=offer2
+      video: V2 + 'offer2-video-light.mp4', poster: V2 + 'offer2-poster.jpg',
+      reviews: [R2 + 'r6.jpg', R2 + 'r7.jpg', R2 + 'r8.jpg', R1 + 'r4.jpg']
+    }
+  };
   var CAT = 'eed6365c-4905-402f-8821-db78741bd33f';
   var KEY = 'zella_offer_pick';
-  // Ad video shown at the top of the box; leave empty to hide it. Upload the mp4 to the repo and put its jsDelivr URL here.
-  var VIDEO = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/offer-video-light.mp4';
-  // Still frame shown at once while the video loads; a blurred copy of it fills the sides (one video download, not two).
-  var POSTER = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@83f027bc09f1b302b5948f66d105799ab179666f/offer-poster.jpg';
+  // The ad link sets the creative for this tab (sessionStorage); the old value '1' means the first creative.
+  var OFFER_KEY = (function () {
+    var m = location.search.match(/[?&]v=(offer\d*)(?:&|$)/);
+    try {
+      if (m && OFFERS[m[1]]) sessionStorage.setItem(KEY, m[1]);
+      var k = sessionStorage.getItem(KEY);
+      return k === '1' ? 'offer' : (OFFERS[k] ? k : null);
+    } catch (e) { return m && OFFERS[m[1]] ? m[1] : null; }
+  })();
+  var O = OFFERS[OFFER_KEY || 'offer'];
+  var SLUGS = O.slugs;
+  // Ad video shown at the top of the box; empty hides it. Poster = still frame shown while it loads (blurred copy fills the sides).
+  var VIDEO = O.video;
+  var POSTER = O.poster;
   // The deadline line disappears once this passes (Cairo time).
   var END = new Date('2026-12-01T00:00:00+02:00');
   var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
+  // The homepage translator in bogo.js swaps the exact text 'أضف للسلة' to English; a zero-width joiner keeps ours Arabic.
+  var ADD = 'أضف للسلة‌';
+  var ALL_HTML = 'ضيف التلاتة للسلة بضغطة <i class="zop-cart">🛒</i>';
+  // Under the box title.
+  var SUB = 'اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚';
   var TRUST = [['💵', 'الدفع عند<br>الاستلام'], ['🔄', 'استبدال واسترجاع<br>مضمون'], ['🚚', 'توصيل خلال<br>2-3 أيام عمل']];
   // Card that gets the "best seller" badge.
-  var BEST = 'borninroma';
-  // Customer review screenshots about the video perfumes (files in the repo's reviews/ folder).
-  var REV_BASE = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@5dbe4acdd43f0bd162f8e026635b31c312b41639/reviews/';
-  var REVIEWS = ['r1.jpg', 'r2.jpg', 'r3.jpg', 'r4.jpg', 'r5.jpg'];
+  var BEST = O.best;
+  // Customer review screenshots about the video perfumes (full URLs).
+  var REV_BASE = '';
+  var REVIEWS = O.reviews;
 
-  function isMen() { return /^\/collections\/men\/?$/.test(location.pathname); }
-  try {
-    if (/[?&]v=offer\b/.test(location.search)) sessionStorage.setItem(KEY, '1');
-  } catch (e) {}
-  function fromAd() {
-    try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; }
-  }
-  function active() {
-    if (!isMen()) return false;
-    return /[?&]v=offer\b/.test(location.search) || fromAd();
-  }
+  // Page that shows the box: the men collection, or the homepage for creatives with page 'home'.
+  function isMen() { return O.page === 'home' ? location.pathname === '/' : /^\/collections\/men\/?$/.test(location.pathname); }
+  function seenReview() { try { return localStorage.getItem('zop-rv-seen') === '1'; } catch (e) { return false; } }
+  function fromAd() { return !!OFFER_KEY; }
+  function active() { return isMen() && fromAd(); }
   // Slug of the video perfume whose page this is, for visitors who came from the ad link.
   function pageSlug() {
     var m = location.pathname.match(/^\/products\/([^\/?#]+)/);
@@ -51,10 +76,16 @@
     '#zop .zop-p{text-align:center;padding:4px 4px 8px}' +
     '#zop .zop-p b{color:#f97316;font-size:17px;font-weight:900}' +
     '#zop .zop-p s{color:#999;font-size:11px;margin-inline-start:4px}' +
+    '#zop .zop-o{margin:-4px 6px 8px;background:#dcfce7;color:#15803d;border-radius:8px;text-align:center;font-size:11px;font-weight:800;padding:3px 2px;line-height:1.3}' +
+    '#zop .zop-o b{display:block;font-size:17px;font-weight:900}' +
     '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-c.zop-ok{background:#16a34a}' +
-    '#zop .zop-all{display:block;width:calc(100% - 20px);margin:0 10px 10px;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
+    '#zop .zop-all{display:block;width:calc(100% - 20px);margin:10px 10px 0;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-all.zop-ok{background:#16a34a}' +
+    '#zop .zop-all:not(.zop-ok){animation:zop-pulse 1.6s ease-in-out infinite}' +
+    '#zop .zop-cart{display:inline-block;font-style:normal;animation:zop-ride 1.6s ease-in-out infinite}' +
+    '@keyframes zop-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(249,115,22,.5)}50%{transform:scale(1.03);box-shadow:0 0 0 8px rgba(249,115,22,0)}}' +
+    '@keyframes zop-ride{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-6px) rotate(-12deg)}50%{transform:translateX(0) rotate(0)}75%{transform:translateX(-3px) rotate(8deg)}}' +
     '#zop #zop-go{display:none;text-align:center;color:#f97316;font-weight:800;font-size:14px;padding:0 0 10px;text-decoration:underline}' +
     '#zop .zop-t{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 10px 12px}' +
     '#zop .zop-t span{background:#fff;border:1px solid #ccfbf1;border-radius:10px;padding:7px 4px;text-align:center;color:#0f766e;font-size:11.5px;font-weight:700;line-height:1.35}' +
@@ -76,14 +107,16 @@
     '#zop .zop-save .zs-c{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}' +
     '#zop .zop-save .zs-c u{text-decoration:none;background:#dcfce7;color:#15803d;font-size:12.5px;border-radius:20px;padding:2px 10px}' +
     '#zop .zop-rh{font-weight:900;font-size:16px;text-align:center;padding:4px 8px 8px;color:#111}' +
-    '#zop .zop-r{display:flex;gap:8px;overflow-x:auto;padding:0 10px 12px;scroll-snap-type:x mandatory}' +
-    '#zop .zop-r img{cursor:pointer;flex:none;width:44%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;scroll-snap-align:start;border:2px solid #14b8a6;background:#000}' +
+    '#zop .zop-rh small{display:block;font-size:12px;font-weight:700;color:#f97316;margin-top:2px;animation:zop-tap 1.2s ease-in-out infinite}' +
+    '@keyframes zop-tap{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}' +
+    '#zop .zop-r{display:flex;justify-content:safe center;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 10px 12px}' +
+    '#zop .zop-r img{cursor:pointer;flex:none;width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:center 30%;padding:3px;background:conic-gradient(from 200deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75);box-shadow:inset 0 0 0 3px #fff}' +
     '#zop-bar{position:fixed;left:10px;right:10px;z-index:40;background:#fff;border:2px solid #14b8a6;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:8px 10px;display:flex;align-items:center;gap:10px;font-family:inherit;direction:rtl}' +
     '#zop-bar .zb-d{display:flex;gap:4px;flex:none}#zop-bar .zb-d span{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:14px}' +
     '#zop-bar .zb-d span.on{background:#14b8a6;color:#fff}#zop-bar .zb-d span.gift{background:#fff7ed;border:2px dashed #f97316}#zop-bar .zb-d span.gift.on{background:#f97316;border-color:#f97316}' +
     '#zop-bar .zb-t{flex:1;font-size:13px;font-weight:800;line-height:1.35;color:#111}#zop-bar .zb-t small{display:block;color:#f97316;font-size:12px}' +
     '#zop-bar button{flex:none;background:#f97316;color:#fff;border:0;border-radius:9px;padding:8px 10px;font-weight:900;font-size:12px;font-family:inherit}' +
-    '@media(min-width:768px){#zop-bar{left:auto;right:20px;width:380px}#zop .zop-r img{width:22%}}' +
+    '@media(min-width:768px){#zop-bar{left:auto;right:20px;width:380px}#zop .zop-r img{width:70px;height:70px}}' +
     '@media(min-width:768px){#zop .zop-n{font-size:15px}#zop .zop-p b{font-size:22px}#zop .zop-g{gap:16px;padding:16px}}';
 
   var products = null, loading = false;
@@ -109,10 +142,11 @@
       '<a href="/products/' + p.slug + '">' +
       '<img src="' + p.thumb + '" alt="" loading="eager">' +
       '<div class="zop-n">' + p.name + '</div>' +
-      '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div></a>' +
+      '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div>' +
+      (deal(p) ? '<div class="zop-o">🎁 في عرض التلاتة<b>' + deal(p) + ' ج.م</b></div>' : '') + '</a>' +
       (added[p.id]
         ? '<button type="button" class="zop-c zop-ok" data-id="' + p.id + '">✓ اتضاف للسلة</button></div>'
-        : '<button type="button" class="zop-c" data-id="' + p.id + '">أضف للسلة</button></div>');
+        : '<button type="button" class="zop-c" data-id="' + p.id + '">' + ADD + '</button></div>');
   }
 
   // The theme re-renders the grid after a cart change, which rebuilds the box; keep what was added.
@@ -194,7 +228,7 @@
       btn.className = 'zop-c zop-ok';
       done();
     }).catch(function () {
-      btn.textContent = 'أضف للسلة';
+      btn.textContent = ADD;
     }).then(function () {
       setTimeout(function () { btn.disabled = false; }, 600);
     });
@@ -217,7 +251,7 @@
       btn.className = 'zop-all zop-ok';
       done();
     }).catch(function () {
-      btn.textContent = '🛒 ضيف التلاتة للسلة بضغطة';
+      btn.innerHTML = ALL_HTML;
       btn.disabled = false;
     });
   }
@@ -237,6 +271,7 @@
       return;
     }
     var rv = e.target.closest('#zop .zop-r img');
+    if (rv) { try { localStorage.setItem('zop-rv-seen', '1'); } catch (er) {} var hs = document.querySelector('#zop .zop-rh small'); if (hs) hs.remove(); }
     if (rv) { e.preventDefault(); showReview(+rv.getAttribute('data-i')); return; }
     if (view && view.contains(e.target)) {
       e.preventDefault();
@@ -316,6 +351,13 @@
     bar.parentNode.insertBefore(cs, bar.nextSibling);
   }
 
+  // This card's share of the 3-piece price (cheapest free), spread in proportion to each price.
+  function deal(p) {
+    if (!products || products.length < 3 || slugPage()) return 0;
+    var ps = products.map(price), sum = ps.reduce(function (a, b) { return a + b; }, 0);
+    return Math.round(price(p) * (sum - Math.min.apply(null, ps)) / sum);
+  }
+  function slugPage() { return !!pageSlug(); }
   function price(p) { return +(p.sale_price || p.price) || 0; }
 
   // The three together: the cheapest one is the free one.
@@ -326,9 +368,9 @@
     // Lead with the price per piece when taking all three, next to the highest single price.
     // One idea per line so it stays tidy on narrow phones.
     return '<div class="zop-save"><em>لما تاخد التلاتة 👇</em>' +
-      '<span class="zs-l">كل برفيوم يطلع عليك بـ</span>' +
+      '<span class="zs-l">البرفيوم الواحد هيكون بـ</span>' +
       '<span class="zs-p"><b>' + Math.round((sum - free) / 3) + ' ج.م</b><s>بدل ' + Math.max.apply(null, ps) + '</s></span>' +
-      '<span class="zs-c"><u>التلاتة بـ ' + (sum - free) + ' بدل ' + sum + '</u><u>وفّرت ' + free + ' ج.م + شحن مجاني 🚚</u></span></div>';
+      '<span class="zs-c"><u>التلاتة بـ ' + (sum - free) + ' بدل ' + sum + ' + شحن مجاني 🚚</u></span></div>';
   }
 
   // Sticky progress bar for ad visitors: how many pieces until the free one. Hidden while the side cart is open.
@@ -382,7 +424,7 @@
       var on = !!added[b.getAttribute('data-id')];
       if (on !== (b.className.indexOf('zop-ok') > -1)) {
         b.className = on ? 'zop-c zop-ok' : 'zop-c';
-        b.textContent = on ? '✓ اتضاف للسلة' : 'أضف للسلة';
+        b.textContent = on ? '✓ اتضاف للسلة' : ADD;
       }
     });
     var all = document.querySelector('#zop .zop-all');
@@ -391,7 +433,7 @@
       if (every !== all.disabled) {
         all.disabled = every;
         all.className = 'zop-all' + (every ? ' zop-ok' : '');
-        all.textContent = every ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة';
+        all.innerHTML = every ? '✓ التلاتة في السلة' : ALL_HTML;
       }
     }
   }
@@ -416,11 +458,11 @@
       list = products.filter(function (p) { return p.slug !== slug; });
       title = '🎬 كمّل أنواع الفيديو';
     } else {
-      anchor = document.querySelector('.category_products_grid_container');
+      anchor = O.page === 'home' ? document.querySelector('main > .content_container') : document.querySelector('.category_products_grid_container');
       if (!anchor) return;
       if (box && box.nextElementSibling === anchor) return;
       list = products;
-      title = '🎬 الأنواع اللي في الفيديو';
+      title = '🔥 أكتر 3 أنواع طلباً الأسبوع ده';
     }
     if (box) box.remove();
     ensureCss();
@@ -428,18 +470,18 @@
     box = document.createElement('div');
     box.id = 'zop';
     if (slug) box.className = 'zop-pp';
-    box.innerHTML = '<div class="zop-h">' + title + '<small>اشتري 2 والتالتة هدية 🎁 والشحن مجاني 🚚</small></div>' +
+    box.innerHTML = '<div class="zop-h">' + title + '<small>' + SUB + '</small></div>' +
       (new Date() < END ? '<div class="zop-end">' + END_TEXT + '</div>' : '') +
       (VIDEO && !slug ? '<div class="zop-v">' +
         '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
         '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
+      (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
+        (allAdded ? '✓ التلاتة في السلة' : ALL_HTML) + '</button>') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : saving()) +
-      (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
-        (allAdded ? '✓ التلاتة في السلة' : '🛒 ضيف التلاتة للسلة بضغطة') + '</button>') +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
-      (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي</div><div class="zop-r">' +
+      (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي' + (seenReview() ? '' : '<small>👆 دوس على أي ريفيو عشان تفتحه</small>') + '</div><div class="zop-r">' +
         REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" decoding="async">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
