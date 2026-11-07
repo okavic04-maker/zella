@@ -13,7 +13,7 @@
     },
     offer2: {
       slugs: ['angelshare', 'wanted1', 'you'], best: 'you', page: 'home', // link: zella-store.com/?v=offer2
-      hook: 'واحد للنهار، واحد للسهرة، وواحد للخروجة',
+      hook: 'واحد للنهار، واحد للسهرة، واحد للخروجة',
       explain: [['للنهار ☀️', 'Stronger With You'], ['للسهرة 🌙', 'Angels’ Share'], ['للخروجة 😎', 'Most Wanted']],
       video: V2 + 'offer2-video-light.mp4', poster: V2 + 'offer2-poster.jpg',
       reviews: [R2 + 'r6.jpg', R2 + 'r7.jpg', R2 + 'r8.jpg', R1 + 'r4.jpg']
@@ -467,16 +467,15 @@
         b.textContent = on ? 'اتضاف للسلة ✓' : ADD;
       }
     });
-    var all = document.querySelector('#zop .zop-all');
-    if (all && !all.textContent.match(/^\.\.\./)) {
-      var every = products.every(function (p) { return added[p.id]; });
-      if (every !== all.disabled) {
-        all.disabled = every;
-        all.className = 'zop-all' + (every ? ' zop-ok' : '');
-        all.innerHTML = every ? 'التلاتة في السلة ✓' : ALL_HTML;
-      }
-    }
+    var every = products.every(function (p) { return added[p.id]; });
+    document.querySelectorAll('#zop .zop-all').forEach(function (all) {
+      if (all.textContent.match(/^\.\.\./) || every === all.disabled) return;
+      all.disabled = every;
+      all.className = 'zop-all' + (every ? ' zop-ok' : '');
+      all.innerHTML = every ? 'التلاتة في السلة ✓' : ALL_HTML;
+    });
   }
+
 
   function tick() {
     if (fromAd()) { ensureCss(); barTick(); syncAdded(); }
@@ -519,6 +518,7 @@
         (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : saving()) +
+      (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' + (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
       (REVIEWS.length ? '<div class="zop-rh">آراء عملاءنا في الأنواع دي ⭐' + (seenReview() ? '' : '<small>دوس على أي ريفيو عشان تفتحه 👆</small>') + '</div><div class="zop-r">' +
