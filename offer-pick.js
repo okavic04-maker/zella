@@ -8,6 +8,8 @@
   var OFFERS = {
     offer: {
       slugs: ['sauvagehigh', 'borninroma', 'intensely'], best: 'borninroma',
+      hook: 'واحد للنهار، واحد للسهرة، واحد للخروجة',
+      explain: [['للنهار ☀️', 'Sauvage'], ['للسهرة 🌙', 'Born In Roma'], ['للخروجة 😎', 'Stronger Intensely']],
       video: V1 + 'offer-video-light.mp4', poster: V1 + 'offer-poster.jpg',
       reviews: [R1 + 'r1.jpg', R1 + 'r2.jpg', R1 + 'r3.jpg', R1 + 'r4.jpg', R1 + 'r5.jpg']
     },
