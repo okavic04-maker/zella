@@ -7,7 +7,7 @@
   var V2 = 'https://cdn.jsdelivr.net/gh/okavic04-maker/zella@0d464ef68e95a8a88ed558f9b19027fd206a2205/';
   var OFFERS = {
     offer: {
-      slugs: ['sauvagehigh', 'borninroma', 'intensely'], best: 'borninroma',
+      slugs: ['sauvagehigh', 'borninroma', 'intensely'], best: 'intensely', page: 'home', // link: zella-store.com/?v=offer (old /collections/men?v=offer links are sent to the homepage)
       hook: 'واحد للنهار، واحد للسهرة، واحد للخروجة',
       explain: [['للنهار ☀️', 'Sauvage'], ['للسهرة 🌙', 'Born In Roma'], ['للخروجة 😎', 'Stronger Intensely']],
       video: V1 + 'offer-video-light.mp4', poster: V1 + 'offer-poster.jpg',
@@ -33,6 +33,8 @@
     } catch (e) { return m && OFFERS[m[1]] ? m[1] : null; }
   })();
   var O = OFFERS[OFFER_KEY || 'offer'];
+  // Saved replies may still use /collections/men?v=offer: a homepage creative opened there goes to the homepage box.
+  if (OFFER_KEY && O.page === 'home' && /^\/collections\/men\/?$/.test(location.pathname) && /[?&]v=offer\d*(&|$)/.test(location.search)) location.replace('/?v=' + OFFER_KEY);
   var SLUGS = O.slugs;
   // Ad video shown at the top of the box; empty hides it. Poster = still frame shown while it loads (blurred copy fills the sides).
   var VIDEO = O.video;
