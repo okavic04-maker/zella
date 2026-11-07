@@ -78,6 +78,17 @@
     '#zop .zop-p s{color:#999;font-size:11px;margin-inline-start:4px}' +
     '#zop .zop-o{margin:-4px 6px 8px;background:#dcfce7;color:#15803d;border-radius:8px;text-align:center;font-size:11px;font-weight:800;padding:3px 2px;line-height:1.3}' +
     '#zop .zop-o b{display:block;font-size:17px;font-weight:900}' +
+    // Deal prices, the per-piece price and the 3-piece line breathe like the orange button so the eye lands on them.
+    '#zop .zop-o{animation:zop-beat 1.6s ease-in-out infinite}#zop .zop-k:nth-child(2) .zop-o{animation-delay:.25s}#zop .zop-k:nth-child(3) .zop-o{animation-delay:.5s}' +
+    '#zop .zop-save .zs-p b{display:inline-block;animation:zop-beat 1.6s ease-in-out infinite}' +
+    '#zop .zop-save .zs-c u{display:inline-block;animation:zop-pulse 1.6s ease-in-out infinite .4s}' +
+    '@keyframes zop-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}' +
+    // Bottom bar: the gift circle bounces and the frame glows, so it keeps catching the eye.
+    '#zop-bar{animation:zop-glow 1.8s ease-in-out infinite}' +
+    '#zop-bar .zb-d span.gift{animation:zop-gift 1.2s ease-in-out infinite}' +
+    '@keyframes zop-glow{0%,100%{box-shadow:0 6px 20px rgba(0,0,0,.18),0 0 0 0 rgba(20,184,166,.55)}50%{box-shadow:0 6px 20px rgba(0,0,0,.18),0 0 0 7px rgba(20,184,166,0)}}' +
+    '@keyframes zop-gift{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.2) rotate(-12deg)}60%{transform:scale(1.1) rotate(10deg)}}' +
+    '@media (prefers-reduced-motion:reduce){#zop .zop-o,#zop .zop-save .zs-p b,#zop .zop-save .zs-c u,#zop .zop-all,#zop .zop-cart,#zop-bar,#zop-bar .zb-d span.gift{animation:none!important}}' +
     '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-c.zop-ok{background:#16a34a}' +
     '#zop .zop-all{display:block;width:calc(100% - 20px);margin:10px 10px 0;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
@@ -462,7 +473,7 @@
       if (!anchor) return;
       if (box && box.nextElementSibling === anchor) return;
       list = products;
-      title = 'أكتر 3 أنواع طلباً الأسبوع ده 🔥';
+      title = 'أكتر 3 أنواع طلباً الأسبوع 🔥';
     }
     if (box) box.remove();
     ensureCss();
