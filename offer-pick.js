@@ -91,6 +91,9 @@
     // The whole vertical ad video in the middle, with a blurred copy of it filling the sides instead of black bars.
     '#zop .zop-v{position:relative;height:230px;overflow:hidden;background:#111}' +
     '#zop .zop-v video{position:relative;display:block;height:100%;width:auto;max-width:100%;margin:0 auto;object-fit:contain}' +
+    // Phones never autoplay with sound: the video starts muted and this button turns the sound on (a tap allows it).
+    '#zop .zop-snd{position:absolute;left:8px;bottom:8px;z-index:3;border:0;border-radius:20px;background:rgba(0,0,0,.65);color:#fff;font:800 12px/1 inherit;font-family:inherit;padding:7px 11px;cursor:pointer;animation:zop-beat 1.6s ease-in-out infinite}' +
+    '#zop .zop-snd.on{animation:none;background:rgba(20,184,166,.85)}' +
     '#zop .zop-v .zop-vb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(14px) brightness(.85);transform:scale(1.3)}' +
     '#zop .zop-g{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:12px 10px}' +
     '#zop .zop-k{display:flex;flex-direction:column;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}' +
@@ -114,7 +117,7 @@
     '#zop-bar .zb-d span.gift{animation:zop-gift 1.2s ease-in-out infinite}' +
     '@keyframes zop-glow{0%,100%{box-shadow:0 6px 20px rgba(0,0,0,.18),0 0 0 0 rgba(20,184,166,.55)}50%{box-shadow:0 6px 20px rgba(0,0,0,.18),0 0 0 7px rgba(20,184,166,0)}}' +
     '@keyframes zop-gift{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.2) rotate(-12deg)}60%{transform:scale(1.1) rotate(10deg)}}' +
-    '@media (prefers-reduced-motion:reduce){#zop .zop-o,#zop .zop-save .zs-p b,#zop .zop-save .zs-c u,#zop .zop-all,#zop .zop-cart,#zop-bar,#zop-bar .zb-d span.gift{animation:none!important}}' +
+    '@media (prefers-reduced-motion:reduce){#zop .zop-o,#zop .zop-save .zs-p b,#zop .zop-save .zs-c u,#zop .zop-all,#zop .zop-cart,#zop-bar,#zop-bar .zb-d span.gift,#zop .zop-snd{animation:none!important}}' +
     '#zop .zop-c{display:block;margin:0 6px 8px;background:#000;color:#fff;font-size:12px;font-weight:800;text-align:center;border:0;border-radius:8px;padding:8px 0;cursor:pointer;font-family:inherit}' +
     '#zop .zop-c.zop-ok{background:#16a34a}' +
     '#zop .zop-all{display:block;width:calc(100% - 20px);margin:12px 10px 0;background:#f97316;color:#fff;font-size:15px;font-weight:900;border:0;border-radius:10px;padding:11px 0;cursor:pointer;font-family:inherit}' +
@@ -297,6 +300,17 @@
     if (!e.target.closest) return;
     var btn = e.target.closest('#zop .zop-c');
     if (btn) { e.preventDefault(); addToCart(btn); return; }
+    var snd = e.target.closest('#zop .zop-snd');
+    if (snd) {
+      e.preventDefault();
+      var vd = snd.parentNode.querySelector('video');
+      var on = vd.muted;
+      vd.muted = !on; vd.defaultMuted = !on;
+      if (on) { vd.currentTime = 0; var pr = vd.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      snd.className = 'zop-snd' + (on ? ' on' : '');
+      snd.textContent = on ? 'اقفل الصوت 🔇' : 'شغل الصوت 🔊';
+      return;
+    }
     var all = e.target.closest('#zop .zop-all');
     if (all) { e.preventDefault(); addAll(all); return; }
     var cs = e.target.closest('#zop-cs button');
@@ -517,7 +531,8 @@
       (new Date() < END ? '<div class="zop-end">' + END_TEXT + '<div class="zt">' + timer() + '</div></div>' : '') +
       (VIDEO && !slug ? '<div class="zop-v">' +
         '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
-        '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
+        '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>' +
+        '<button type="button" class="zop-snd">شغل الصوت 🔊</button></div>' : '') +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
         (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
