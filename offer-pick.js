@@ -35,7 +35,7 @@
   var POSTER = O.poster;
   // The deadline line disappears once this passes (Cairo time).
   var END = new Date('2026-12-01T00:00:00+02:00');
-  var END_TEXT = '⏳ العرض ساري لحد 30 نوفمبر بس';
+  var END_TEXT = 'العرض ساري لحد 30 نوفمبر بس ⏳';
   // The homepage translator in bogo.js swaps the exact text 'أضف للسلة' to English; a zero-width joiner keeps ours Arabic.
   var ADD = 'أضف للسلة‌';
   var ALL_HTML = 'ضيف التلاتة للسلة بضغطة <i class="zop-cart">🛒</i>';
@@ -143,9 +143,9 @@
       '<img src="' + p.thumb + '" alt="" loading="eager">' +
       '<div class="zop-n">' + p.name + '</div>' +
       '<div class="zop-p"><b>' + price + ' ج.م</b>' + (p.sale_price && p.price > p.sale_price ? '<s>' + p.price + '</s>' : '') + '</div>' +
-      (deal(p) ? '<div class="zop-o">🎁 في عرض التلاتة<b>' + deal(p) + ' ج.م</b></div>' : '') + '</a>' +
+      (deal(p) ? '<div class="zop-o">في عرض التلاتة 🎁<b>' + deal(p) + ' ج.م</b></div>' : '') + '</a>' +
       (added[p.id]
-        ? '<button type="button" class="zop-c zop-ok" data-id="' + p.id + '">✓ اتضاف للسلة</button></div>'
+        ? '<button type="button" class="zop-c zop-ok" data-id="' + p.id + '">اتضاف للسلة ✓</button></div>'
         : '<button type="button" class="zop-c" data-id="' + p.id + '">' + ADD + '</button></div>');
   }
 
@@ -224,7 +224,7 @@
     btn.disabled = true;
     btn.textContent = '...';
     post(btn.getAttribute('data-id')).then(function () {
-      btn.textContent = '✓ اتضاف للسلة';
+      btn.textContent = 'اتضاف للسلة ✓';
       btn.className = 'zop-c zop-ok';
       done();
     }).catch(function () {
@@ -244,10 +244,10 @@
       return chain.then(function () { return post(p.id); });
     }, Promise.resolve()).then(function () {
       [].forEach.call(document.querySelectorAll('#zop .zop-c'), function (b) {
-        b.textContent = '✓ اتضاف للسلة';
+        b.textContent = 'اتضاف للسلة ✓';
         b.className = 'zop-c zop-ok';
       });
-      btn.textContent = '✓ التلاتة في السلة';
+      btn.textContent = 'التلاتة في السلة ✓';
       btn.className = 'zop-all zop-ok';
       done();
     }).catch(function () {
@@ -303,7 +303,7 @@
     clearTimeout(view.t);
     view.setAttribute('data-i', i);
     view.innerHTML = '<div class="zrv-bars">' + REVIEWS.map(function (f, j) { return '<i><b style="width:' + (j < i ? 100 : 0) + '%"></b></i>'; }).join('') + '</div>' +
-      '<div class="zrv-head">⭐ آراء عملاءنا</div><button type="button" class="zrv-close" aria-label="Close">×</button><b class="zrv-a">‹</b><b class="zrv-a r">›</b>' +
+      '<div class="zrv-head">آراء عملاءنا ⭐</div><button type="button" class="zrv-close" aria-label="Close">×</button><b class="zrv-a">‹</b><b class="zrv-a r">›</b>' +
       '<img src="' + REV_BASE + REVIEWS[i] + '" alt="">';
     var bar = view.querySelectorAll('.zrv-bars b')[i];
     void bar.offsetWidth;
@@ -411,7 +411,7 @@
     bar.style.bottom = (innerHeight - top + 8) + 'px';
   }
 
-  // Keep "✓ اتضاف للسلة" in step with the real cart (a line removed in the side cart turns back to "أضف للسلة").
+  // Keep "اتضاف للسلة ✓" in step with the real cart (a line removed in the side cart turns back to "أضف للسلة").
   function syncAdded() {
     var c = queryClient(), d = c && c.getQueryData(['cart-items']);
     // Right after our own add the cart list is still the old one; wait for the refetch.
@@ -424,7 +424,7 @@
       var on = !!added[b.getAttribute('data-id')];
       if (on !== (b.className.indexOf('zop-ok') > -1)) {
         b.className = on ? 'zop-c zop-ok' : 'zop-c';
-        b.textContent = on ? '✓ اتضاف للسلة' : ADD;
+        b.textContent = on ? 'اتضاف للسلة ✓' : ADD;
       }
     });
     var all = document.querySelector('#zop .zop-all');
@@ -433,7 +433,7 @@
       if (every !== all.disabled) {
         all.disabled = every;
         all.className = 'zop-all' + (every ? ' zop-ok' : '');
-        all.innerHTML = every ? '✓ التلاتة في السلة' : ALL_HTML;
+        all.innerHTML = every ? 'التلاتة في السلة ✓' : ALL_HTML;
       }
     }
   }
@@ -456,13 +456,13 @@
       if (!anchor) return;
       if (box && box.previousElementSibling === anchor) return;
       list = products.filter(function (p) { return p.slug !== slug; });
-      title = '🎬 كمّل أنواع الفيديو';
+      title = 'كمّل أنواع الفيديو 🎬';
     } else {
       anchor = O.page === 'home' ? document.querySelector('main > .content_container') : document.querySelector('.category_products_grid_container');
       if (!anchor) return;
       if (box && box.nextElementSibling === anchor) return;
       list = products;
-      title = '🔥 أكتر 3 أنواع طلباً الأسبوع ده';
+      title = 'أكتر 3 أنواع طلباً الأسبوع ده 🔥';
     }
     if (box) box.remove();
     ensureCss();
@@ -476,12 +476,12 @@
         '<img class="zop-vb" src="' + POSTER + '" alt="" aria-hidden="true">' +
         '<video src="' + VIDEO + '" poster="' + POSTER + '" autoplay muted loop playsinline webkit-playsinline preload="auto"></video></div>' : '') +
       (slug ? '' : '<button type="button" class="zop-all' + (allAdded ? ' zop-ok' : '') + '"' + (allAdded ? ' disabled' : '') + '>' +
-        (allAdded ? '✓ التلاتة في السلة' : ALL_HTML) + '</button>') +
+        (allAdded ? 'التلاتة في السلة ✓' : ALL_HTML) + '</button>') +
       '<div class="zop-g">' + list.map(card).join('') + '</div>' +
       (slug ? '' : saving()) +
       '<a id="zop-go" href="/cart"' + (Object.keys(added).length ? ' style="display:block"' : '') + '>كمّل الطلب من السلة ←</a>' +
       '<div class="zop-t">' + TRUST.map(function (t) { return '<span><i>' + t[0] + '</i>' + t[1] + '</span>'; }).join('') + '</div>' +
-      (REVIEWS.length ? '<div class="zop-rh">⭐ آراء عملاءنا في الأنواع دي' + (seenReview() ? '' : '<small>👆 دوس على أي ريفيو عشان تفتحه</small>') + '</div><div class="zop-r">' +
+      (REVIEWS.length ? '<div class="zop-rh">آراء عملاءنا في الأنواع دي ⭐' + (seenReview() ? '' : '<small>دوس على أي ريفيو عشان تفتحه 👆</small>') + '</div><div class="zop-r">' +
         REVIEWS.map(function (f, i) { return '<img src="' + REV_BASE + f + '" data-i="' + i + '" alt="" decoding="async">'; }).join('') + '</div>' : '');
     if (slug) anchor.parentNode.insertBefore(box, anchor.nextSibling);
     else anchor.parentNode.insertBefore(box, anchor);
